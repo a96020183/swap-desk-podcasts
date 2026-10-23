@@ -1,0 +1,288 @@
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const pad = n => String(n).padStart(2, '0');
+const DRAFT_LIMIT = 5;
+
+const state = { mode: 'recorded', key: null, result: null, tab: 'desk', host: null, picks: [] };
+
+function store(k, v) { try { if (v === undefined) return sessionStorage.getItem(k); sessionStorage.setItem(k, v); } catch { return null; } }
+const draftsUsed = () => Number(store('drafts') || 0);
+
+async function getJson(url, opts) {
+  const r = await fetch(url, opts);
+  const j = await r.json().catch(() => ({}));
+  if (!r.ok) throw new Error(j.error || 'Something went wrong.');
+  return j;
+}
+const post = (url, body) => getJson(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+
+/* mode */
+document.querySelectorAll('.mode button').forEach(b => b.addEventListener('click', () => {
+  state.mode = b.dataset.mode;
+  document.querySelectorAll('.mode button').forEach(x => x.setAttribute('aria-pressed', String(x === b)));
+}));
+
+/* start screen */
+async function loadPresets() {
+  const { presets } = await getJson('/api/presets');
+  $('#presets').innerHTML = presets.map(p => `
+    <button class="preset" type="button" data-id="${esc(p.itunesId)}">
+      <span class="k">${esc(p.label)}</span><span class="n">${esc(p.name)}</span><span class="d">${esc(p.note)}</span>
+    </button>`).join('');
+  $('#presets').querySelectorAll('button').forEach(b => b.addEventListener('click', () => start(b.dataset.id)));
+}
+
+$('#find').addEventListener('submit', async e => {
+  e.preventDefault();
+  const q = $('#q').value.trim();
+  const list = $('#matches');
+  list.hidden = false; list.innerHTML = '<li class="meta" style="padding:10px 4px">Searching the iTunes directory&hellip;</li>';
+  try {
+    const { shows } = await getJson('/api/search?q=' + encodeURIComponent(q));
+    if (!shows.length) { list.innerHTML = '<li class="meta" style="padding:10px 4px">No show found. Try the exact name or paste the Apple Podcasts link.</li>'; return; }
+    if (shows.length === 1 && /\d{6,}/.test(q)) return start(shows[0].itunesId);
+    list.innerHTML = shows.map(s => `<li><button type="button" data-id="${esc(s.itunesId)}">
+      <img src="${esc(s.artwork)}" alt="" width="40" height="40" loading="lazy"><span><span>${esc(s.name)}</span><br><span class="meta">${esc(s.artist)}${s.genre ? ' &middot; ' + esc(s.genre) : ''}</span></span></button></li>`).join('');
+    list.querySelectorAll('button').forEach(b => b.addEventListener('click', () => start(b.dataset.id)));
+  } catch (err) { list.innerHTML = `<li class="err">${esc(err.message)}</li>`; }
+});
+
+/* run */
+async function start(itunesId, seeds = null) {
+  $('#start').hidden = true; $('#run').hidden = false; $('#matches').hidden = true;
+  $('#result').innerHTML = ''; $('#steps').innerHTML = ''; $('#steps').hidden = false;
+  if (!seeds) $('#host').innerHTML = '<p class="sub">Finding your show&hellip;</p>';
+  window.scrollTo({ top: 0 });
+  try {
+    const r = await post('/api/run', { itunesId, seeds, live: state.mode === 'live' });
+    if (r.done) return show(r.result, r.key);
+    poll(r.jobId);
+  } catch (err) { $('#result').innerHTML = `<p class="err">${esc(err.message)}</p>`; }
+}
+
+async function poll(id) {
+  try {
+    const j = await getJson('/api/run/' + id);
+    renderSteps(j.steps, j.state);
+    if (j.state === 'running') return setTimeout(() => poll(id), 700);
+    if (j.state === 'error') { $('#result').innerHTML = `<p class="err">${esc(j.error)}</p>`; return; }
+    show(j.result, j.key);
+  } catch (err) { $('#result').innerHTML = `<p class="err">${esc(err.message)}</p>`; }
+}
+
+function renderSteps(steps, st) {
+  $('#steps').innerHTML = steps.map((s, i) => {
+    const now = st === 'running' && i === steps.length - 1;
+    const bar = s.total ? `<span class="bar"><i style="width:${Math.round(100 * s.done / s.total)}%"></i></span>` : '';
+    return `<li class="${now ? 'now' : 'done'}">${esc(s.label)}${s.total ? ` <span style="font-family:var(--mono);font-size:13px">${s.done}/${s.total}</span>` : ''}${bar}</li>`;
+  }).join('');
+}
+
+function hostBlock(h) {
+  const f = h.feed;
+  const facts = f ? [`${f.episodeCount} episodes`, f.cadence, f.firstYear ? `since ${f.firstYear}` : ''].filter(Boolean).join(' · ') : '';
+  return `${h.artwork ? `<img src="${esc(h.artwork)}" alt="" width="64" height="64">` : ''}
+    <div><h2>${esc(h.name)}<span class="badge ${h.inQloo ? 'in' : 'out'}">${h.inQloo ? 'Found in Qloo' : 'Not in Qloo'}</span></h2>
+    <div class="sub">${esc(h.artist)}${facts ? ' &middot; ' + esc(facts) : ''}</div></div>
+    <button class="ghost small again" type="button" id="again">Try another show</button>`;
+}
+
+function show(result, key) {
+  state.result = result; state.key = key; state.host = result.host;
+  $('#steps').hidden = true;
+  $('#host').innerHTML = hostBlock(result.host);
+  $('#again').addEventListener('click', () => { $('#run').hidden = true; $('#start').hidden = false; $('#q').focus(); });
+  if (result.status === 'notInQloo') return renderFallback(result);
+  renderResult();
+}
+
+/* fallback: Qloo doesn't have the show */
+function renderFallback(r) {
+  state.picks = [];
+  const sugg = r.suggestions || [];
+  $('#result').innerHTML = `<div class="fallback">
+    <h3>Qloo doesn't have this show yet.</h3>
+    <p>Pick 3 to 5 shows with a similar audience. We'll search from those.</p>
+    <div class="picks" id="picks">${sugg.map((s, i) => `<button type="button" class="pick" data-i="${i}" aria-pressed="false" ${s.inQloo ? '' : 'disabled'}>${esc(s.name)} <small>${s.inQloo ? 'In Qloo' : 'Not in Qloo'}</small></button>`).join('')}</div>
+    <form class="seedfind" id="seedfind"><input id="seedq" placeholder="Add a show you know" aria-label="Add a show"><button class="ghost small" type="submit">Look up</button></form>
+    <div class="picks" id="seedres"></div>
+    <button type="button" id="go" disabled>Search from these</button>
+    <p class="based" style="font-size:13px;color:var(--ink-3)">Suggestions come from gpt-4.1-mini (no web search). Only shows Qloo knows can be picked.</p>
+  </div>`;
+  const all = sugg.map(s => ({ ...s }));
+  const sync = () => {
+    $('#go').disabled = state.picks.length < 1;
+    $('#go').textContent = state.picks.length ? `Search from ${state.picks.length} show${state.picks.length > 1 ? 's' : ''}` : 'Search from these';
+  };
+  const toggle = (btn, s) => {
+    const on = btn.getAttribute('aria-pressed') !== 'true';
+    if (on && state.picks.length >= 5) return;
+    btn.setAttribute('aria-pressed', String(on));
+    state.picks = on ? [...state.picks, { qid: s.qid, name: s.name }] : state.picks.filter(p => p.qid !== s.qid);
+    sync();
+  };
+  $('#picks').querySelectorAll('.pick').forEach(b => b.addEventListener('click', () => toggle(b, all[b.dataset.i])));
+  $('#seedfind').addEventListener('submit', async e => {
+    e.preventDefault();
+    const q = $('#seedq').value.trim(); if (!q) return;
+    $('#seedres').innerHTML = '<span class="based">Looking in Qloo&hellip;</span>';
+    try {
+      const { results } = await getJson('/api/seed-search?q=' + encodeURIComponent(q));
+      if (!results.length) { $('#seedres').innerHTML = '<span class="based">Qloo has no show by that name.</span>'; return; }
+      $('#seedres').innerHTML = results.map((s, i) => `<button type="button" class="pick" data-i="${i}" aria-pressed="${state.picks.some(p => p.qid === s.qid)}">${esc(s.name)} <small>In Qloo</small></button>`).join('');
+      $('#seedres').querySelectorAll('.pick').forEach(b => b.addEventListener('click', () => toggle(b, results[b.dataset.i])));
+    } catch (err) { $('#seedres').innerHTML = `<span class="err">${esc(err.message)}</span>`; }
+  });
+  $('#go').addEventListener('click', () => start(r.host.itunesId, state.picks));
+}
+
+/* result */
+function chipHtml(chips, only) {
+  const list = only ? chips.filter(c => only.includes(c.k)) : chips;
+  return list.map(c => `<span class="chip ${esc(c.k)}">${esc(c.text)}</span>`).join('');
+}
+
+function receiptHtml(row) {
+  const q = row.receipt.qloo, f = row.receipt.feed, c = row.receipt.call;
+  const num = v => (v == null ? 'n/a' : Number(v).toFixed(3));
+  const feed = f.error ? `<p>${esc(f.error)}</p>` : `<dl>
+      <dt>Last episode</dt><dd>${esc(f.lastEpisode || 'n/a')}</dd>
+      <dt>Episodes</dt><dd>${esc(f.episodeCount)}${f.cadence ? ', ' + esc(f.cadence) : ''}${f.firstYear ? ', since ' + esc(f.firstYear) : ''}</dd>
+      <dt>Promo-looking episodes</dt><dd>${esc(f.promoChecked)} in the last 40</dd>
+    </dl>
+    ${f.swaps.length ? `<ul>${f.swaps.slice(0, 6).map(s => `<li>${esc(s.show)} <span style="color:var(--ink-3)">in &ldquo;${esc(s.episode)}&rdquo;, ${esc(s.date)}</span></li>`).join('')}</ul>` : '<p style="margin:8px 0 0;color:var(--ink-3)">No swaps with other shows found in its recent episodes.</p>'}
+    ${f.openQuote ? `<p style="margin:8px 0 0">Channel description: &ldquo;${esc(f.openQuote)}&rdquo;</p>` : ''}`;
+  return `<div class="receipt">
+    <section><h4>Qloo says</h4><dl>
+      <dt>Entity</dt><dd>${esc(q.name)}<br><span style="font:11px var(--mono);color:var(--ink-3)">${esc(q.entityId)}</span></dd>
+      <dt>Rank</dt><dd>${q.seed ? 'Your pick' : '#' + esc(q.rank) + ' of 50'}</dd>
+      <dt>Affinity</dt><dd>${num(q.affinity)}</dd>
+      <dt>Popularity</dt><dd>${num(q.popularity)}${q.hostPopularity != null ? ` (yours ${num(q.hostPopularity)})` : ''}</dd>
+      <dt>Similar reach list</dt><dd>${q.similarParams ? (q.inSimilarReachList ? 'Yes' : 'No') : 'Not asked'}</dd>
+      <dt>Tags</dt><dd>${esc(q.tags.join(', ') || 'none')}</dd>
+      ${q.compareTags ? `<dt>In common</dt><dd>${esc(q.compareTags.join(', '))} <span style="color:var(--ink-3)">(compare with ${esc(q.compareWith)})</span></dd>` : ''}
+      ${q.explainedBy && q.explainedBy.length ? `<dt>Explained by</dt><dd>${esc(q.explainedBy[0])}</dd>` : ''}
+      <dt>Query</dt><dd class="params">${Object.entries(q.params || {}).map(([k, v]) => esc(k + '=' + v)).join('<br>')}${q.similarParams ? '<br>2nd call adds filter.popularity.max=' + esc(q.similarParams['filter.popularity.max']) : ''}</dd>
+    </dl></section>
+    <section><h4>Their feed says</h4>${feed}</section>
+    <section><h4>Our call</h4><dl>
+      <dt>Placed</dt><dd>${c.position ? '#' + c.position + (c.column === 'firstFive' ? ', first five' : '') : esc(columnName(c.column))}</dd>
+    </dl>${c.reasons.length ? `<ul>${c.reasons.map(r => `<li>${esc(r)}</li>`).join('')}</ul>` : '<p style="margin:8px 0 0">Kept in Qloo\'s order.</p>'}
+    <p class="ours">This part is Swap Desk's reading, not Qloo's.</p></section>
+  </div>`;
+}
+const columnName = c => ({ outOfReach: 'Great fit, likely out of reach', paused: 'Paused', removed: 'Left out', below: 'Below the top 20' }[c] || c);
+
+function firstFiveRow(row) {
+  return `<div class="row" data-key="${esc(row.key)}">
+    <div class="num">${pad(row.position)}</div>
+    ${row.artwork ? `<img class="art" src="${esc(row.artwork)}" alt="" loading="lazy">` : '<div class="art"></div>'}
+    <div>
+      <div class="name">${esc(row.name)}</div><div class="by">${esc(row.artist)}</div>
+      <div class="chips">${chipHtml(row.chips, ['taste', 'reach', 'feed', 'swaps', 'you', 'open'])}</div>
+      ${row.why.length ? `<ul class="why">${row.why.map(w => `<li data-src="${w.src === 'qloo' ? 'Qloo' : 'Feed'}">${esc(w.text)}</li>`).join('')}</ul>` : ''}
+    </div>
+    <div class="acts">
+      <button class="small" type="button" data-draft="${esc(row.key)}">Draft invite</button>
+      <span class="contact">${row.contact ? 'Contact in feed' : 'No public contact'}</span>
+      <button class="link" type="button" data-receipt="${esc(row.key)}">Receipt</button>
+    </div>
+  </div>`;
+}
+
+function restRow(row) {
+  const two = row.chips.filter(c => ['reach', 'swaps', 'you', 'open'].includes(c.k)).slice(0, 2);
+  const taste = row.chips.find(c => c.k === 'taste');
+  return `<div class="line" data-key="${esc(row.key)}">
+    <div class="num">${pad(row.position)}</div>
+    <div class="name">${esc(row.name)}</div>
+    <div class="chips">${chipHtml([taste, ...two].filter(Boolean))}</div>
+    <button class="link" type="button" data-receipt="${esc(row.key)}">Receipt</button>
+  </div>`;
+}
+
+function renderResult() {
+  const r = state.result;
+  const five = r.shortlist.slice(0, 5), rest = r.shortlist.slice(5);
+  const desk = `
+    ${r.seeds?.length ? `<p class="based">Based on your picks: ${esc(r.seeds.join(', '))}. Qloo has not seen your show.</p>` : ''}
+    <div class="five"><div class="five-head"><h3>Your first five</h3><span>${r.shortlist.length} of 50 Qloo matches made the shortlist</span></div>
+      ${five.map(firstFiveRow).join('') || '<p>No active shows to suggest.</p>'}</div>
+    ${rest.length ? `<div class="rest"><h3>Next on the list</h3>${rest.map(restRow).join('')}</div>` : ''}
+    <div class="sides">
+      <div class="side"><h3>Big name, different crowd</h3><p class="hint">Top of your genre, but not in Qloo's 50 closest to you.</p>
+        <ul>${r.bigNames.map(b => `<li>${esc(b.name)}</li>`).join('') || '<li>None</li>'}</ul></div>
+      <div class="side"><h3>Great fit, likely out of reach</h3><p class="hint">Close match, but Qloo popularity is well above yours.</p>
+        <ul>${r.outOfReach.map(b => `<li>${esc(b.name)}<span>#${esc(b.receipt.qloo.rank)}</span></li>`).join('') || '<li>None</li>'}</ul></div>
+    </div>
+    ${r.paused.length ? `<details class="fold"><summary>Paused: ${r.paused.length} shows with no new episode in 120 days</summary><ul>${r.paused.map(p => `<li>${esc(p.name)} <span>#${esc(p.receipt.qloo.rank)}</span></li>`).join('')}</ul></details>` : ''}
+    ${r.removed.length ? `<details class="fold"><summary>Left out: ${r.removed.length} from your own publisher or network</summary><ul>${r.removed.map(p => `<li>${esc(p.name)} <span>${esc(p.receipt.call.reasons[0] || '')}</span></li>`).join('')}</ul></details>` : ''}
+    <p class="usage">${r.usage.qloo + r.usage.feeds ? `This run: ${r.usage.qloo} Qloo calls, ${r.usage.feeds} feeds read, ${r.usage.llmCalls} LLM calls, ${r.seconds} s.` : 'This run reused data fetched in the last 24 hours.'} Run at ${esc(new Date(r.ranAt).toUTCString().slice(5, 22))} UTC${state.mode === 'recorded' ? ' (recorded mode; switch to Live to refetch)' : ''}.</p>`;
+  const llm = `<p class="llm-note">What gpt-4.1-mini suggests with no web search and no Qloo, from the same show name, publisher, genre and description. Titles as the model wrote them; we did not check that they exist.</p>
+    <ol class="llm-list">${r.llmOnly.map(x => `<li>${esc(x.name)}</li>`).join('')}</ol>`;
+  $('#result').innerHTML = `
+    <div class="tabs" role="tablist">
+      <button role="tab" type="button" data-tab="desk" aria-selected="${state.tab === 'desk'}">Swap Desk shortlist</button>
+      <button role="tab" type="button" data-tab="llm" aria-selected="${state.tab === 'llm'}">LLM only <span class="t-sub">gpt-4.1-mini, no web search</span></button>
+    </div>
+    <div id="pane">${state.tab === 'desk' ? desk : llm}</div>`;
+  $('#result').querySelectorAll('[data-tab]').forEach(b => b.addEventListener('click', () => { state.tab = b.dataset.tab; renderResult(); }));
+  $('#result').querySelectorAll('[data-receipt]').forEach(b => b.addEventListener('click', () => toggleReceipt(b)));
+  $('#result').querySelectorAll('[data-draft]').forEach(b => b.addEventListener('click', () => openDraft(b.dataset.draft)));
+}
+
+function findRow(key) {
+  const r = state.result;
+  return [...r.shortlist, ...r.more, ...r.outOfReach, ...r.paused, ...r.removed].find(x => x.key === key);
+}
+
+function toggleReceipt(btn) {
+  const host = btn.closest('[data-key]');
+  const open = host.querySelector('.receipt');
+  if (open) { open.remove(); btn.textContent = 'Receipt'; return; }
+  host.insertAdjacentHTML('beforeend', receiptHtml(findRow(host.dataset.key)));
+  btn.textContent = 'Hide receipt';
+}
+
+/* drafts: a person reads, edits and sends from their own mail app */
+const dlg = $('#draft');
+async function openDraft(key) {
+  const row = findRow(key);
+  const left = DRAFT_LIMIT - draftsUsed();
+  $('#draft-title').textContent = `Invite to ${row.name}`;
+  $('#draft-ok').checked = false; $('#draft-prepare').disabled = true; $('#draft-ready').hidden = true;
+  $('#draft-left').textContent = left > 0 ? `${left} of ${DRAFT_LIMIT} drafts left this session` : '';
+  $('#draft-to').textContent = row.contact ? `To: ${row.contact} (from their feed)` : 'No public contact in their feed. Copy the text and reach them where they list a contact.';
+  if (left <= 0) {
+    $('#draft-subject').value = ''; $('#draft-body').value = '';
+    $('#draft-note').textContent = `You've made ${DRAFT_LIMIT} drafts this session. Send those first.`;
+    dlg.showModal(); return;
+  }
+  $('#draft-subject').value = ''; $('#draft-body').value = 'Writing a draft from the facts on this row…';
+  $('#draft-note').textContent = '';
+  dlg.showModal();
+  try {
+    const d = await post('/api/draft', { key: state.key, row: key });
+    store('drafts', String(draftsUsed() + 1));
+    $('#draft-subject').value = d.subject; $('#draft-body').value = d.body;
+    $('#draft-left').textContent = `${DRAFT_LIMIT - draftsUsed()} of ${DRAFT_LIMIT} drafts left this session`;
+    $('#draft-note').textContent = d.source === 'llm'
+      ? 'Drafted by gpt-4.1-mini from this row\'s facts only. Every show and episode name was checked against the receipt.'
+      : 'Fixed template' + (d.fallbackReason ? ` (the AI draft failed our fact check: ${d.fallbackReason})` : '') + '.';
+    dlg.dataset.to = d.to || '';
+  } catch (err) { $('#draft-body').value = ''; $('#draft-note').textContent = err.message; }
+}
+$('#draft-ok').addEventListener('change', e => { $('#draft-prepare').disabled = !e.target.checked || !$('#draft-body').value.trim(); });
+$('#draft-prepare').addEventListener('click', () => {
+  const s = $('#draft-subject').value, b = $('#draft-body').value;
+  $('#draft-mail').href = `mailto:${encodeURIComponent(dlg.dataset.to || '')}?subject=${encodeURIComponent(s)}&body=${encodeURIComponent(b)}`;
+  $('#draft-ready').hidden = false;
+});
+$('#draft-copy').addEventListener('click', async () => {
+  try { await navigator.clipboard.writeText($('#draft-subject').value + '\n\n' + $('#draft-body').value); $('#draft-copy').textContent = 'Copied'; } catch { $('#draft-copy').textContent = 'Select and copy'; }
+  setTimeout(() => { $('#draft-copy').textContent = 'Copy text'; }, 1500);
+});
+
+loadPresets();
+const params = new URLSearchParams(location.search);
+if (params.get('show')) start(params.get('show'));

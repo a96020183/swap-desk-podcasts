@@ -70,3 +70,15 @@ export function parseItunesId(text) {
   const m = s.match(/(?:^|[^0-9a-z])id(\d{6,12})(?:[^0-9]|$)/i) || s.match(/^(\d{6,12})$/);
   return m ? m[1] : null;
 }
+
+// Loose check that two titles name the same show (used before joining a Qloo row to an iTunes feed).
+export function namesAgree(a, b) {
+  if (sameShow(a, b)) return true;
+  const na = normalize(a), nb = normalize(b);
+  if (!na || !nb) return false;
+  if ((nb.length >= 6 && na.includes(nb)) || (na.length >= 6 && nb.includes(na))) return true;
+  const ta = new Set(base(a).split(' ').filter(Boolean)), tb = new Set(base(b).split(' ').filter(Boolean));
+  if (!ta.size || !tb.size) return false;
+  let inter = 0; for (const t of ta) if (tb.has(t)) inter++;
+  return inter / Math.min(ta.size, tb.size) >= 0.6;
+}

@@ -1,0 +1,49 @@
+.ev { max-width: 860px; padding-top: 40px; }
+.ev h1 { font-size: clamp(36px, 5.4vw, 58px); line-height: 1; letter-spacing: -0.035em; margin: 0 0 22px; }
+.ev h2 { font-size: 24px; letter-spacing: -0.02em; margin: 64px 0 8px; }
+.ev h2 + p { color: var(--ink-2); margin-top: 0; }
+.ev .lede { margin-bottom: 18px; }
+.big { display: flex; flex-wrap: wrap; gap: 40px; margin: 40px 0 8px; padding: 26px 0; border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule); }
+.big div { min-width: 140px; }
+.big b { display: block; font: 500 44px/1 var(--mono); letter-spacing: -0.04em; }
+.big span { color: var(--ink-3); font-size: 14px; }
+table.k { width: 100%; border-collapse: collapse; margin: 18px 0 0; font-size: 15px; }
+table.k th, table.k td { text-align: right; padding: 11px 8px; border-top: 1px solid var(--rule); font-variant-numeric: tabular-nums; }
+table.k th:first-child, table.k td:first-child { text-align: left; padding-left: 0; }
+table.k thead th { border-top: 0; font: 500 12px var(--mono); text-transform: uppercase; letter-spacing: 0.06em; color: var(--ink-3); }
+table.k td { font-family: var(--mono); font-size: 14px; }
+table.k td:first-child { font-family: var(--font); font-size: 15px; }
+table.k .lock { background: var(--gold-wash); }
+table.k tr.q td { font-weight: 500; }
+.note { color: var(--ink-3); font-size: 13.5px; margin: 10px 0 0; }
+.plot { margin: 26px 0 0; }
+.plot svg { width: 100%; height: auto; display: block; }
+.plot text { font-family: var(--mono); font-size: 11px; fill: var(--ink-3); }
+.plot .lab { font-family: var(--font); font-size: 13px; fill: var(--ink-2); }
+.legend { display: flex; flex-wrap: wrap; gap: 18px; font-size: 13px; color: var(--ink-2); margin-top: 6px; }
+.legend i { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 6px; vertical-align: -1px; }
+.cols { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; margin-top: 18px; }
+.cols h3 { font-size: 17px; margin: 0 0 10px; }
+.cols ul { margin: 0; padding: 0; list-style: none; }
+.cols li { padding: 10px 0; border-top: 1px solid var(--rule); color: var(--ink-2); font-size: 15px; }
+.cols li b { color: var(--ink); font-weight: 500; }
+.facts { margin: 14px 0 0; padding: 0; list-style: none; }
+.facts li { padding: 10px 0; border-top: 1px solid var(--rule); color: var(--ink-2); font-size: 15px; }
+.test { border: 1px solid var(--rule); background: var(--sheet); border-radius: 14px; padding: 18px 20px; margin-top: 14px; }
+.test h3 { margin: 0 0 4px; font-size: 17px; }
+.test .verdict { font: 500 12px var(--mono); text-transform: uppercase; letter-spacing: 0.06em; padding: 4px 8px; border-radius: 6px; margin-left: 8px; vertical-align: 2px; }
+.verdict.pass { background: #e3efe7; color: var(--green); }
+.verdict.fail { background: #efe9dc; color: var(--ink-2); }
+.verdict.wait { background: #efe9dc; color: var(--ink-3); }
+.test p { margin: 6px 0 0; color: var(--ink-2); font-size: 15px; }
+code, .mono { font-family: var(--mono); font-size: 13px; }
+@media (max-width: 720px) {
+  .ev { padding-top: 20px; }
+  .big { gap: 22px; }
+  .big b { font-size: 34px; }
+  .cols { grid-template-columns: 1fr; gap: 24px; }
+  table.k { font-size: 13px; }
+  table.k th, table.k td { padding: 9px 4px; }
+  table.k td { font-size: 12.5px; }
+  .tablewrap { overflow-x: auto; }
+}

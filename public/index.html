@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Swap Desk for podcasts</title>
+<meta name="description" content="Swap Desk finds podcasts whose audiences overlap with yours, reads their feeds to see who trades promos, and drafts the invite. You press send.">
+<link rel="icon" href="/mark.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,500;12..96,700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/style.css">
+</head>
+<body>
+<header class="top">
+  <a class="brand" href="/" aria-label="Swap Desk home"><img src="/mark.svg" alt="" width="22" height="22"><span>Swap Desk</span></a>
+  <nav class="top-nav">
+    <a href="/evidence">Evidence</a>
+    <div class="mode" role="group" aria-label="Data mode">
+      <button type="button" data-mode="recorded" aria-pressed="true">Recorded</button>
+      <button type="button" data-mode="live" aria-pressed="false">Live</button>
+    </div>
+  </nav>
+</header>
+
+<main id="app">
+  <section class="start" id="start">
+    <h1>Find your first five<br>promo swaps.</h1>
+    <p class="lede">Swap Desk finds podcasts whose audiences overlap with yours, reads their feeds to see who trades promos, and drafts the invite. You press send.</p>
+    <form class="find" id="find" autocomplete="off">
+      <label class="sr" for="q">Your show</label>
+      <input id="q" name="q" placeholder="Your show's name or Apple Podcasts link" required>
+      <button type="submit">Find my show</button>
+    </form>
+    <ul class="matches" id="matches" hidden></ul>
+    <div class="judges">
+      <p class="eyebrow">For judges: 30 seconds</p>
+      <div class="presets" id="presets"></div>
+    </div>
+  </section>
+
+  <section class="run" id="run" hidden>
+    <div class="host" id="host"></div>
+    <ol class="steps" id="steps"></ol>
+    <div id="result"></div>
+  </section>
+</main>
+
+<footer class="foot">
+  <p id="footline">In our test of 48 shows, Qloo's top 20 held 24.3% of the partners hosts really chose. <a href="/evidence">Evidence &rarr;</a></p>
+  <p class="fine">Swap Desk never sends email. Podcast data: Qloo, the iTunes Search API and each show's public RSS feed. Popularity is Qloo's percentile, not downloads.</p>
+</footer>
+
+<dialog id="draft" aria-labelledby="draft-title">
+  <form method="dialog" class="draft">
+    <header>
+      <h2 id="draft-title">Invite</h2>
+      <button class="x" value="cancel" aria-label="Close">&times;</button>
+    </header>
+    <p class="to" id="draft-to"></p>
+    <label>Subject<input id="draft-subject"></label>
+    <label>Message<textarea id="draft-body" rows="12"></textarea></label>
+    <p class="note" id="draft-note"></p>
+    <label class="confirm"><input type="checkbox" id="draft-ok"> I've read this and I'll send it myself.</label>
+    <div class="draft-actions">
+      <span class="left" id="draft-left"></span>
+      <button type="button" id="draft-prepare" disabled>Prepare to send</button>
+    </div>
+    <div class="ready" id="draft-ready" hidden>
+      <p>Ready. This opens a draft in your own email app. Nothing is sent until you press send there.</p>
+      <div class="draft-actions">
+        <button type="button" class="ghost" id="draft-copy">Copy text</button>
+        <a class="button" id="draft-mail" href="#">Open in my email app</a>
+      </div>
+    </div>
+  </form>
+</dialog>
+<script src="/app.js" type="module"></script>
+</body>
+</html>
