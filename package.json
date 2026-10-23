@@ -1,0 +1,18 @@
+{
+  "name": "swap-desk-podcasts",
+  "version": "0.1.0",
+  "description": "Swap Desk finds podcasts whose audiences overlap with yours, reads their feeds to see who trades promos, and drafts the invite. You press send.",
+  "type": "module",
+  "license": "MIT",
+  "private": true,
+  "engines": { "node": ">=20" },
+  "scripts": {
+    "start": "node server.js",
+    "test": "node --test \"test/*.test.js\"",
+    "check:public": "node scripts/check-public.js",
+    "warm": "node scripts/warm.js"
+  },
+  "dependencies": {
+    "fast-xml-parser": "4.5.3"
+  }
+}

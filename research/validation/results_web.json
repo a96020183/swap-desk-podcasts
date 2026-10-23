@@ -1,0 +1,864 @@
+{
+ "model": "gpt-5.5-2026-04-23",
+ "effort": "low",
+ "search_context_size": "low",
+ "primary_label": "SUBSET24 (24 done)",
+ "cost_usd_new_spend": 3.723,
+ "cost_usd_precommit_incident_assumed": 2.0,
+ "n_calls": 24,
+ "(a) primary": {
+  "anchors": 24,
+  "pairs": 95,
+  "k=5": {
+   "recall": {
+    "Q": 9.4,
+    "W": 9.8,
+    "L": 4.2
+   },
+   "hit": {
+    "Q": 20.8,
+    "W": 25.0,
+    "L": 12.5
+   },
+   "pairs hit": {
+    "Q": 7,
+    "W": 7,
+    "L": 3
+   },
+   "Q-W [CI]": [
+    -0.4,
+    -6.3,
+    5.8
+   ],
+   "W-L [CI]": [
+    5.6,
+    -0.3,
+    13.2
+   ]
+  },
+  "k=10": {
+   "recall": {
+    "Q": 12.8,
+    "W": 14.0,
+    "L": 4.2
+   },
+   "hit": {
+    "Q": 29.2,
+    "W": 33.3,
+    "L": 12.5
+   },
+   "pairs hit": {
+    "Q": 10,
+    "W": 10,
+    "L": 3
+   },
+   "Q-W [CI]": [
+    -1.1,
+    -9.9,
+    7.9
+   ],
+   "W-L [CI]": [
+    9.8,
+    1.9,
+    20.2
+   ]
+  },
+  "k=20": {
+   "recall": {
+    "Q": 17.7,
+    "W": 17.7,
+    "L": 6.7
+   },
+   "hit": {
+    "Q": 41.7,
+    "W": 45.8,
+    "L": 20.8
+   },
+   "pairs hit": {
+    "Q": 13,
+    "W": 13,
+    "L": 5
+   },
+   "Q-W [CI]": [
+    0.0,
+    -9.0,
+    9.0
+   ],
+   "W-L [CI]": [
+    11.0,
+    0.6,
+    22.6
+   ]
+  }
+ },
+ "(b) minus L1-leaked anchors": {
+  "anchors": 24,
+  "pairs": 95,
+  "k=5": {
+   "recall": {
+    "Q": 9.4,
+    "W": 9.8,
+    "L": 4.2
+   },
+   "hit": {
+    "Q": 20.8,
+    "W": 25.0,
+    "L": 12.5
+   },
+   "pairs hit": {
+    "Q": 7,
+    "W": 7,
+    "L": 3
+   },
+   "Q-W [CI]": [
+    -0.4,
+    -6.3,
+    5.8
+   ],
+   "W-L [CI]": [
+    5.6,
+    -0.3,
+    13.2
+   ]
+  },
+  "k=10": {
+   "recall": {
+    "Q": 12.8,
+    "W": 14.0,
+    "L": 4.2
+   },
+   "hit": {
+    "Q": 29.2,
+    "W": 33.3,
+    "L": 12.5
+   },
+   "pairs hit": {
+    "Q": 10,
+    "W": 10,
+    "L": 3
+   },
+   "Q-W [CI]": [
+    -1.1,
+    -9.9,
+    7.9
+   ],
+   "W-L [CI]": [
+    9.8,
+    1.9,
+    20.2
+   ]
+  },
+  "k=20": {
+   "recall": {
+    "Q": 17.7,
+    "W": 17.7,
+    "L": 6.7
+   },
+   "hit": {
+    "Q": 41.7,
+    "W": 45.8,
+    "L": 20.8
+   },
+   "pairs hit": {
+    "Q": 13,
+    "W": 13,
+    "L": 5
+   },
+   "Q-W [CI]": [
+    0.0,
+    -9.0,
+    9.0
+   ],
+   "W-L [CI]": [
+    11.0,
+    0.6,
+    22.6
+   ]
+  }
+ },
+ "(c) minus L2 anchors [report only]": {
+  "anchors": 0,
+  "pairs": 0
+ },
+ "mid+cold within primary [report only]": {
+  "anchors": 15,
+  "pairs": 60,
+  "k=5": {
+   "recall": {
+    "Q": 12.8,
+    "W": 12.8,
+    "L": 3.3
+   },
+   "hit": {
+    "Q": 26.7,
+    "W": 26.7,
+    "L": 6.7
+   },
+   "pairs hit": {
+    "Q": 6,
+    "W": 5,
+    "L": 1
+   },
+   "Q-W [CI]": [
+    0.0,
+    -10.0,
+    10.0
+   ],
+   "W-L [CI]": [
+    9.4,
+    0.0,
+    20.6
+   ]
+  },
+  "k=10": {
+   "recall": {
+    "Q": 12.8,
+    "W": 18.3,
+    "L": 3.3
+   },
+   "hit": {
+    "Q": 26.7,
+    "W": 33.3,
+    "L": 6.7
+   },
+   "pairs hit": {
+    "Q": 6,
+    "W": 7,
+    "L": 1
+   },
+   "Q-W [CI]": [
+    -5.6,
+    -17.8,
+    6.7
+   ],
+   "W-L [CI]": [
+    15.0,
+    1.7,
+    31.7
+   ]
+  },
+  "k=20": {
+   "recall": {
+    "Q": 18.3,
+    "W": 21.0,
+    "L": 6.7
+   },
+   "hit": {
+    "Q": 40.0,
+    "W": 46.7,
+    "L": 13.3
+   },
+   "pairs hit": {
+    "Q": 8,
+    "W": 9,
+    "L": 2
+   },
+   "Q-W [CI]": [
+    -2.6,
+    -12.5,
+    6.7
+   ],
+   "W-L [CI]": [
+    14.3,
+    -1.7,
+    31.7
+   ]
+  }
+ },
+ "coldest third within primary [report only]": {
+  "anchors": 7,
+  "pairs": 29,
+  "k=5": {
+   "recall": {
+    "Q": 23.8,
+    "W": 23.8,
+    "L": 7.1
+   },
+   "hit": {
+    "Q": 42.9,
+    "W": 42.9,
+    "L": 14.3
+   },
+   "pairs hit": {
+    "Q": 5,
+    "W": 4,
+    "L": 1
+   },
+   "Q-W [CI]": [
+    0.0,
+    -21.4,
+    21.4
+   ],
+   "W-L [CI]": [
+    16.7,
+    0.0,
+    38.1
+   ]
+  },
+  "k=10": {
+   "recall": {
+    "Q": 23.8,
+    "W": 28.6,
+    "L": 7.1
+   },
+   "hit": {
+    "Q": 42.9,
+    "W": 42.9,
+    "L": 14.3
+   },
+   "pairs hit": {
+    "Q": 5,
+    "W": 5,
+    "L": 1
+   },
+   "Q-W [CI]": [
+    -4.8,
+    -26.2,
+    16.7
+   ],
+   "W-L [CI]": [
+    21.4,
+    0.0,
+    50.0
+   ]
+  },
+  "k=20": {
+   "recall": {
+    "Q": 23.8,
+    "W": 32.1,
+    "L": 7.1
+   },
+   "hit": {
+    "Q": 42.9,
+    "W": 57.1,
+    "L": 14.3
+   },
+   "pairs hit": {
+    "Q": 5,
+    "W": 6,
+    "L": 1
+   },
+   "Q-W [CI]": [
+    -8.3,
+    -26.2,
+    7.1
+   ],
+   "W-L [CI]": [
+    25.0,
+    3.6,
+    53.6
+   ]
+  }
+ },
+ "sensitivity: anchors with >=1 parsed title": {
+  "anchors": 24,
+  "pairs": 95,
+  "k=5": {
+   "recall": {
+    "Q": 9.4,
+    "W": 9.8,
+    "L": 4.2
+   },
+   "hit": {
+    "Q": 20.8,
+    "W": 25.0,
+    "L": 12.5
+   },
+   "pairs hit": {
+    "Q": 7,
+    "W": 7,
+    "L": 3
+   },
+   "Q-W [CI]": [
+    -0.4,
+    -6.3,
+    5.8
+   ],
+   "W-L [CI]": [
+    5.6,
+    -0.3,
+    13.2
+   ]
+  },
+  "k=10": {
+   "recall": {
+    "Q": 12.8,
+    "W": 14.0,
+    "L": 4.2
+   },
+   "hit": {
+    "Q": 29.2,
+    "W": 33.3,
+    "L": 12.5
+   },
+   "pairs hit": {
+    "Q": 10,
+    "W": 10,
+    "L": 3
+   },
+   "Q-W [CI]": [
+    -1.1,
+    -9.9,
+    7.9
+   ],
+   "W-L [CI]": [
+    9.8,
+    1.9,
+    20.2
+   ]
+  },
+  "k=20": {
+   "recall": {
+    "Q": 17.7,
+    "W": 17.7,
+    "L": 6.7
+   },
+   "hit": {
+    "Q": 41.7,
+    "W": 45.8,
+    "L": 20.8
+   },
+   "pairs hit": {
+    "Q": 13,
+    "W": 13,
+    "L": 5
+   },
+   "Q-W [CI]": [
+    0.0,
+    -9.0,
+    9.0
+   ],
+   "W-L [CI]": [
+    11.0,
+    0.6,
+    22.6
+   ]
+  }
+ },
+ "leak counts": {
+  "anchors with L1 (cited or consulted)": 0,
+  "anchors with L1 cited": 0,
+  "anchors with L2": 24,
+  "mean cited urls": 0.0,
+  "mean consulted urls": 74.0,
+  "share citing/consulting": {
+   "podcasts.apple.com": 100.0,
+   "rephonic.com": 41.7,
+   "matchmaker.fm": 0.0,
+   "podchaser.com": 29.2,
+   "listennotes.com": 4.2
+  }
+ },
+ "per_anchor_leak": {
+  "1261679921": {
+   "L1_cited": 0,
+   "L1_consulted": 0,
+   "L2_any": 1,
+   "n_cited": 0,
+   "n_consulted": 69,
+   "L1_urls": [],
+   "watch": {
+    "podcasts.apple.com": true,
+    "rephonic.com": true,
+    "matchmaker.fm": false,
+    "podchaser.com": false,
+    "listennotes.com": false
+   },
+   "n_titles": 20,
+   "status": "completed"
+  },
+  "1744365897": {
+   "L1_cited": 0,
+   "L1_consulted": 0,
+   "L2_any": 6,
+   "n_cited": 0,
+   "n_consulted": 60,
+   "L1_urls": [],
+   "watch": {
+    "podcasts.apple.com": true,
+    "rephonic.com": true,
+    "matchmaker.fm": false,
+    "podchaser.com": false,
+    "listennotes.com": false
+   },
+   "n_titles": 20,
+   "status": "completed"
+  },
+  "1161867961": {
+   "L1_cited": 0,
+   "L1_consulted": 0,
+   "L2_any": 1,
+   "n_cited": 0,
+   "n_consulted": 101,
+   "L1_urls": [],
+   "watch": {
+    "podcasts.apple.com": true,
+    "rephonic.com": false,
+    "matchmaker.fm": false,
+    "podchaser.com": false,
+    "listennotes.com": false
+   },
+   "n_titles": 20,
+   "status": "completed"
+  },
+  "498130432": {
+   "L1_cited": 0,
+   "L1_consulted": 0,
+   "L2_any": 4,
+   "n_cited": 0,
+   "n_consulted": 129,
+   "L1_urls": [],
+   "watch": {
+    "podcasts.apple.com": true,
+    "rephonic.com": false,
+    "matchmaker.fm": false,
+    "podchaser.com": true,
+    "listennotes.com": false
+   },
+   "n_titles": 20,
+   "status": "completed"
+  },
+  "1419175088": {
+   "L1_cited": 0,
+   "L1_consulted": 0,
+   "L2_any": 1,
+   "n_cited": 0,
+   "n_consulted": 62,
+   "L1_urls": [],
+   "watch": {
+    "podcasts.apple.com": true,
+    "rephonic.com": true,
+    "matchmaker.fm": false,
+    "podchaser.com": false,
+    "listennotes.com": false
+   },
+   "n_titles": 20,
+   "status": "completed"
+  },
+  "1307664642": {
+   "L1_cited": 0,
+   "L1_consulted": 0,
+   "L2_any": 11,
+   "n_cited": 0,
+   "n_consulted": 67,
+   "L1_urls": [],
+   "watch": {
+    "podcasts.apple.com": true,
+    "rephonic.com": true,
+    "matchmaker.fm": false,
+    "podchaser.com": false,
+    "listennotes.com": false
+   },
+   "n_titles": 20,
+   "status": "completed"
+  },
+  "1155163742": {
+   "L1_cited": 0,
+   "L1_consulted": 0,
+   "L2_any": 10,
+   "n_cited": 0,
+   "n_consulted": 52,
+   "L1_urls": [],
+   "watch": {
+    "podcasts.apple.com": true,
+    "rephonic.com": true,
+    "matchmaker.fm": false,
+    "podchaser.com": false,
+    "listennotes.com": false
+   },
+   "n_titles": 20,
+   "status": "completed"
+  },
+  "1453436915": {
+   "L1_cited": 0,
+   "L1_consulted": 0,
+   "L2_any": 1,
+   "n_cited": 0,
+   "n_consulted": 73,
+   "L1_urls": [],
+   "watch": {
+    "podcasts.apple.com": true,
+    "rephonic.com": false,
+    "matchmaker.fm": false,
+    "podchaser.com": false,
+    "listennotes.com": false
+   },
+   "n_titles": 20,
+   "status": "completed"
+  },
+  "1642986180": {
+   "L1_cited": 0,
+   "L1_consulted": 0,
+   "L2_any": 1,
+   "n_cited": 0,
+   "n_consulted": 74,
+   "L1_urls": [],
+   "watch": {
+    "podcasts.apple.com": true,
+    "rephonic.com": false,
+    "matchmaker.fm": false,
+    "podchaser.com": false,
+    "listennotes.com": false
+   },
+   "n_titles": 20,
+   "status": "completed"
+  },
+  "1490881800": {
+   "L1_cited": 0,
+   "L1_consulted": 0,
+   "L2_any": 2,
+   "n_cited": 0,
+   "n_consulted": 111,
+   "L1_urls": [],
+   "watch": {
+    "podcasts.apple.com": true,
+    "rephonic.com": true,
+    "matchmaker.fm": false,
+    "podchaser.com": true,
+    "listennotes.com": false
+   },
+   "n_titles": 20,
+   "status": "completed"
+  },
+  "1520715907": {
+   "L1_cited": 0,
+   "L1_consulted": 0,
+   "L2_any": 3,
+   "n_cited": 0,
+   "n_consulted": 66,
+   "L1_urls": [],
+   "watch": {
+    "podcasts.apple.com": true,
+    "rephonic.com": false,
+    "matchmaker.fm": false,
+    "podchaser.com": true,
+    "listennotes.com": false
+   },
+   "n_titles": 20,
+   "status": "completed"
+  },
+  "1204570053": {
+   "L1_cited": 0,
+   "L1_consulted": 0,
+   "L2_any": 6,
+   "n_cited": 0,
+   "n_consulted": 62,
+   "L1_urls": [],
+   "watch": {
+    "podcasts.apple.com": true,
+    "rephonic.com": false,
+    "matchmaker.fm": false,
+    "podchaser.com": false,
+    "listennotes.com": false
+   },
+   "n_titles": 20,
+   "status": "completed"
+  },
+  "1459167540": {
+   "L1_cited": 0,
+   "L1_consulted": 0,
+   "L2_any": 2,
+   "n_cited": 0,
+   "n_consulted": 124,
+   "L1_urls": [],
+   "watch": {
+    "podcasts.apple.com": true,
+    "rephonic.com": false,
+    "matchmaker.fm": false,
+    "podchaser.com": false,
+    "listennotes.com": false
+   },
+   "n_titles": 20,
+   "status": "completed"
+  },
+  "1205352558": {
+   "L1_cited": 0,
+   "L1_consulted": 0,
+   "L2_any": 9,
+   "n_cited": 0,
+   "n_consulted": 73,
+   "L1_urls": [],
+   "watch": {
+    "podcasts.apple.com": true,
+    "rephonic.com": false,
+    "matchmaker.fm": false,
+    "podchaser.com": true,
+    "listennotes.com": false
+   },
+   "n_titles": 20,
+   "status": "completed"
+  },
+  "1569279148": {
+   "L1_cited": 0,
+   "L1_consulted": 0,
+   "L2_any": 3,
+   "n_cited": 0,
+   "n_consulted": 35,
+   "L1_urls": [],
+   "watch": {
+    "podcasts.apple.com": true,
+    "rephonic.com": false,
+    "matchmaker.fm": false,
+    "podchaser.com": false,
+    "listennotes.com": false
+   },
+   "n_titles": 20,
+   "status": "completed"
+  },
+  "1242028887": {
+   "L1_cited": 0,
+   "L1_consulted": 0,
+   "L2_any": 9,
+   "n_cited": 0,
+   "n_consulted": 84,
+   "L1_urls": [],
+   "watch": {
+    "podcasts.apple.com": true,
+    "rephonic.com": true,
+    "matchmaker.fm": false,
+    "podchaser.com": true,
+    "listennotes.com": false
+   },
+   "n_titles": 20,
+   "status": "completed"
+  },
+  "306390087": {
+   "L1_cited": 0,
+   "L1_consulted": 0,
+   "L2_any": 10,
+   "n_cited": 0,
+   "n_consulted": 54,
+   "L1_urls": [],
+   "watch": {
+    "podcasts.apple.com": true,
+    "rephonic.com": true,
+    "matchmaker.fm": false,
+    "podchaser.com": false,
+    "listennotes.com": false
+   },
+   "n_titles": 20,
+   "status": "completed"
+  },
+  "1536067021": {
+   "L1_cited": 0,
+   "L1_consulted": 0,
+   "L2_any": 5,
+   "n_cited": 0,
+   "n_consulted": 38,
+   "L1_urls": [],
+   "watch": {
+    "podcasts.apple.com": true,
+    "rephonic.com": false,
+    "matchmaker.fm": false,
+    "podchaser.com": false,
+    "listennotes.com": false
+   },
+   "n_titles": 20,
+   "status": "completed"
+  },
+  "1275172907": {
+   "L1_cited": 0,
+   "L1_consulted": 0,
+   "L2_any": 11,
+   "n_cited": 0,
+   "n_consulted": 62,
+   "L1_urls": [],
+   "watch": {
+    "podcasts.apple.com": true,
+    "rephonic.com": false,
+    "matchmaker.fm": false,
+    "podchaser.com": true,
+    "listennotes.com": false
+   },
+   "n_titles": 20,
+   "status": "completed"
+  },
+  "354668519": {
+   "L1_cited": 0,
+   "L1_consulted": 0,
+   "L2_any": 11,
+   "n_cited": 0,
+   "n_consulted": 83,
+   "L1_urls": [],
+   "watch": {
+    "podcasts.apple.com": true,
+    "rephonic.com": false,
+    "matchmaker.fm": false,
+    "podchaser.com": false,
+    "listennotes.com": false
+   },
+   "n_titles": 20,
+   "status": "completed"
+  },
+  "367330921": {
+   "L1_cited": 0,
+   "L1_consulted": 0,
+   "L2_any": 9,
+   "n_cited": 0,
+   "n_consulted": 69,
+   "L1_urls": [],
+   "watch": {
+    "podcasts.apple.com": true,
+    "rephonic.com": false,
+    "matchmaker.fm": false,
+    "podchaser.com": true,
+    "listennotes.com": false
+   },
+   "n_titles": 20,
+   "status": "completed"
+  },
+  "666596114": {
+   "L1_cited": 0,
+   "L1_consulted": 0,
+   "L2_any": 5,
+   "n_cited": 0,
+   "n_consulted": 77,
+   "L1_urls": [],
+   "watch": {
+    "podcasts.apple.com": true,
+    "rephonic.com": true,
+    "matchmaker.fm": false,
+    "podchaser.com": false,
+    "listennotes.com": false
+   },
+   "n_titles": 20,
+   "status": "completed"
+  },
+  "1400426755": {
+   "L1_cited": 0,
+   "L1_consulted": 0,
+   "L2_any": 6,
+   "n_cited": 0,
+   "n_consulted": 116,
+   "L1_urls": [],
+   "watch": {
+    "podcasts.apple.com": true,
+    "rephonic.com": true,
+    "matchmaker.fm": false,
+    "podchaser.com": false,
+    "listennotes.com": true
+   },
+   "n_titles": 20,
+   "status": "completed"
+  },
+  "263585537": {
+   "L1_cited": 0,
+   "L1_consulted": 0,
+   "L2_any": 4,
+   "n_cited": 0,
+   "n_consulted": 35,
+   "L1_urls": [],
+   "watch": {
+    "podcasts.apple.com": true,
+    "rephonic.com": false,
+    "matchmaker.fm": false,
+    "podchaser.com": false,
+    "listennotes.com": false
+   },
+   "n_titles": 20,
+   "status": "completed"
+  }
+ },
+ "verdict": "WEB LLM NOT WORSE",
+ "verdict_note": "(b) used"
+}

@@ -1,0 +1,9 @@
+60d418f 2026-10-23 23:51:50 +0800 [post-hoc] Record Test C results (derived values only): NOT PASS; pooled 48 table labelled post-hoc
+4d71e7b 2026-10-23 23:47:45 +0800 [post-hoc] Freeze Test C (Qloo + web LLM interleave on 24 held-out anchors): protocol, runner, analysis, before any model call
+7e89b98 2026-10-23 23:41:41 +0800 [post-hoc] Record web-search LLM comparison results (derived values only): SUBSET24, gpt-5.5 low effort; verdict WEB LLM NOT WORSE per PROTOCOL_web.md section 7
+cde749f 2026-10-23 23:36:28 +0800 [post-hoc] Freeze web-search LLM comparison (PROTOCOL_web.md, runner, analysis) before any scored model call. Records the pre-commit incident (2 accidental calls, discarded).
+ba117e4 2026-10-23 23:11:47 +0800 [post-hoc] recall/hit at k=5,10,20 with bootstrap CIs; same lists, matching and scoring as analyze.py, only k changes. Added after blind review R1. No API calls.
+0326910 2026-10-23 22:49:39 +0800 Record frozen-analysis summary (derived values only)
+03d5f0c 2026-10-23 22:47:05 +0800 [post-hoc] network/recency robustness and partner coverage scripts, added after frozen result
+1cb0171 2026-10-23 22:07:55 +0800 Fix: iTunes cache filename too long on Windows (hash key); add parallel RSS prefetch (same one-GET-per-feed rule). No protocol change.
+81b319e 2026-10-23 21:52:49 +0800 Freeze podcast promo-swap protocol, prompts, matching, thresholds before any answer data or Qloo method call

@@ -1,0 +1,10 @@
+# secrets
+.env
+.env.*
+!.env.example
+# private Qloo cache, run logs, research raw data (never public)
+.private/
+node_modules/
+進度.md
+*.log
+__pycache__/
