@@ -9,8 +9,8 @@ const OPEN_PRE = new RegExp(prompts.openToSwapsPrefilter, 'i');
 const episodeText = e => `${e.title} ${String(e.desc || '').slice(0, 300)}`.trim();
 
 // Swaps a show ran in its own feed (its 40 most recent episodes): which other show each promo episode was for.
-export async function extractSwaps(showName, feed) {
-  const eps = promoEpisodes(feed);
+export async function extractSwaps(showName, feed, { allTime = false } = {}) {
+  const eps = allTime ? (feed.promoAll || promoEpisodes(feed)) : promoEpisodes(feed);
   if (!eps.length || !llmAvailable()) return { checked: eps.length, swaps: [], dropped: 0, llm: false };
   const swaps = []; let dropped = 0;
   for (let s = 0; s < eps.length; s += 40) {

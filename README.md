@@ -15,8 +15,8 @@ Indie hosts grow by trading promos with shows like theirs, and the hard part is 
 4. The shortlist is **Qloo's top 20, in Qloo's order**, the same list the evidence page scores. The top 5 are
    **Your first five**. Nothing is moved or dropped. Size labels compare Qloo popularity with yours
    (Similar from 0.05 below to 0.02 above yours, Smaller or Bigger beyond that, **Much bigger reach** at +0.05 or more; on the fallback, against the median of your picks); feeds with no episode in 120 days get
-   **Quiet for N+ months**; shows from your own publisher or network, or that you swapped with in the last 12 months,
-   are labelled too. The first row that is active and has a contact is marked **Start here**. A checkbox hides quiet
+   **Quiet for N+ months**; shows from your own publisher or network, or that already swapped with you (found in either feed, any year),
+   are labelled too. The first row that is active and has a contact is marked **Start here** (skipping shows you already swapped with). A checkbox hides quiet
    shows and shows with no contact; it never reorders. Rows 6 to 20 show the Qloo tags both shows carry, or say that Qloo
    gave a score and no reason.
 5. Every row has a **Why** line built by code from fixed sentences. The material comes only from Qloo

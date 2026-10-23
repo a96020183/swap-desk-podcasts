@@ -51,10 +51,11 @@ export function chips(host, c) {
   const out = [];
   if (c.seed) out.push({ k: 'taste', text: 'Your pick' });
   if (c.affinity != null) out.push({ k: 'taste', text: `Taste match ${c.affinity.toFixed(2)}` });
-  if (c.reach === 'similar') out.push({ k: 'reach', text: 'Similar reach' });
-  else if (c.reach === 'bigger') out.push({ k: 'reach', text: 'Bigger reach' });
-  else if (c.reach === 'much') out.push({ k: 'much', text: 'Much bigger reach' });
-  else if (c.reach === 'smaller') out.push({ k: 'reach', text: 'Smaller reach' });
+  const vs = host.sizeBase === 'your picks' ? ' to your picks' : '';
+  if (c.reach === 'similar') out.push({ k: 'reach', text: vs ? 'Similar to your picks' : 'Similar reach' });
+  else if (c.reach === 'bigger') out.push({ k: 'reach', text: vs ? 'Bigger than your picks' : 'Bigger reach' });
+  else if (c.reach === 'much') out.push({ k: 'much', text: vs ? 'Much bigger than your picks' : 'Much bigger reach' });
+  else if (c.reach === 'smaller') out.push({ k: 'reach', text: vs ? 'Smaller than your picks' : 'Smaller reach' });
   if (c.feedMismatch) out.push({ k: 'same', text: 'Feed not matched' });
   if (c.quietMonths) out.push({ k: 'quiet', text: c.quietMonths >= 24 ? `Quiet for ${Math.floor(c.quietMonths / 12)}+ years` : `Quiet for ${c.quietMonths}+ months` });
   if (c.samePublisher) out.push({ k: 'same', text: 'Same publisher' });

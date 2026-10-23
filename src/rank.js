@@ -35,8 +35,9 @@ export function swappedWith(host, c, today) {
   const dates = [];
   for (const s of c.swaps || []) if (sameShow(s.show, host.name)) dates.push(s.date);
   for (const s of host.swaps || []) if (names.some(n => sameShow(s.show, n))) dates.push(s.date);
-  const recent = dates.filter(d => d && daysBetween(d, today) <= RULES.recentSwapDays).sort().reverse();
-  return recent[0] || null;
+  // Any time: a past swap found in either feed is labelled, whatever its age.
+  const known = dates.filter(Boolean).sort().reverse();
+  return known[0] || null;
 }
 
 export function swapsWithOthers(host, c) {
@@ -74,7 +75,7 @@ export function rankCandidates(host, cands, { today = new Date().toISOString().s
     if (c.sameNetwork) flags.push('Same network: both feeds name it in their description');
     if (c.quietMonths) flags.push(`No new episode for ${c.feed.daysSinceLast} days`);
     if (c.reach === 'much') flags.push('Qloo popularity is well above yours');
-    if (c.swappedWithYou) flags.push('You already swapped in the last 12 months');
+    if (c.swappedWithYou) flags.push(`You already swapped (${c.swappedWithYou.slice(0, 7)}), found in a feed`);
     c.call = { reasons: flags };
   }
   const shortlist = ordered.slice(0, RULES.shortlist);

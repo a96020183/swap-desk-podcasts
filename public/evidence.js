@@ -63,6 +63,7 @@ async function main() {
       <div><b>${p1(k.rows[1].v[2])}</b><span>gpt-4.1-mini, no web search</span></div>
       <div><b>${p1(w.rows[1].v[2])}</b><span>gpt-5.5 with web search (too close to call)</span></div>
       <div><b>${p1(k.rows[2].v[2])}</b><span>most popular in genre</span></div>
+      <div><b>${p1(f.since2025.qloo)}</b><span>Qloo, swaps since 2025 only</span></div>
     </div>
     <p class="note" style="color:var(--ink-2);font-size:15px">Short version: Qloo found about four times as many real partners as an LLM without web search. Against a top LLM with web search, the gap was too small to call. Counting only swaps since 2025, Qloo's top 20 held ${p1(f.since2025.qloo)}.</p>
     <p class="note">Top 20 was fixed before we looked (commit <span class="mono">${c.locked}</span>). Qloo minus the LLM-only list: +${k.diffTop20.value} points, 95% interval ${ci(k.diffTop20.ci)}.</p>

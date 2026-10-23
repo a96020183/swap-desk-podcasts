@@ -12,6 +12,8 @@ export function inviteFacts(host, c) {
   const recent = (c.feed?.recent || []).slice(0, 3).map(e => e.title).filter(Boolean);
   return {
     hostShow: host.name,
+    hostLink: host.link || '',
+    swappedBefore: c.pastSwap ? c.pastSwap.slice(0, 4) : null,
     hostEpisodes: host.episodes || null,
     hostCadence: host.cadence || '',
     hostSince: host.since || null,
@@ -38,7 +40,7 @@ export function templateInvite(f) {
     subject: `Trailer swap with ${f.hostShow}?`,
     body: [
       hi, '',
-      `I host ${f.hostShow}${about ? ` (${about})` : ''}: [link to your show].${ep}${ground}`,
+      `I host ${f.hostShow}${about ? ` (${about})` : ''}: ${f.hostLink || '[link to your show]'}.${f.swappedBefore ? ` We swapped promos back in ${f.swappedBefore}, and I'd love to do it again.` : ''}${ep}${ground}`,
       '',
       'Would you be up for a trailer swap? We each play a 30-second trailer for the other show near the top of an upcoming episode. We get about [downloads per episode] downloads an episode. I can send our trailer and a short read script this week.',
       '', 'Thanks,', '[Your name]',
@@ -72,7 +74,8 @@ export async function draftInvite(host, c, { note = '' } = {}) {
     'each show plays a 30-second trailer for the other near the top of an upcoming episode. Under 120 words. Plain words, no hype, no em dashes.',
     'Use ONLY the facts below. Do not invent episodes, numbers, guests, or praise. Do not claim the sender has listened to anything.',
     'Say in one line what the shows have in common using commonGround in plain words; never use the word "tag" or "Qloo".',
-    'Mention the sender show’s episode count, cadence and start year if given, followed by the placeholder "[link to your show]".',
+    'Mention the sender show’s episode count, cadence and start year if given, and hostLink exactly as written.',
+    'If swappedBefore is a year, say the two shows swapped promos before (in that year) and propose doing it again; otherwise write it as a first contact.',
     'theirRecentEpisodes are episodes of the RECIPIENT’s show, not the sender’s. If it is not empty, mention the first one by its exact title as their episode, in the first two sentences.',
     'Include the sentence "We get about [downloads per episode] downloads an episode." exactly, for the sender to fill in.',
     'Subject: short and casual, like "Trailer swap with <sender show>?".',

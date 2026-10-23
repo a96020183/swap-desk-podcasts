@@ -175,6 +175,7 @@ function receiptHtml(row) {
 const isQuiet = row => row.chips.some(c => c.k === 'quiet');
 const isUnmatched = row => row.chips.some(c => c.text === 'Feed not matched');
 const reachable = row => !isQuiet(row) && !isUnmatched(row) && Boolean(row.contact || row.website);
+const swappedBefore = row => row.chips.some(c => c.k === 'you');
 
 function firstFiveRow(row) {
   const why = !reachable(row) ? (isUnmatched(row) ? 'No feed matched' : isQuiet(row) ? 'Quiet feed' : 'No contact in feed') : '';
@@ -182,7 +183,7 @@ function firstFiveRow(row) {
     <div class="num">${pad(row.position)}</div>
     ${row.artwork ? `<img class="art" src="${esc(row.artwork)}" alt="" loading="lazy">` : '<div class="art"></div>'}
     <div>
-      ${row.key === state.startKey ? '<div class="startmark">Start here · first active show with a contact</div>' : ''}
+      ${row.key === state.startKey ? '<div class="startmark">Start here · first active show with a contact you haven’t swapped with</div>' : ''}
       <div class="name">${esc(row.name)}</div><div class="by">${esc(row.artist)}</div>
       <div class="chips">${chipHtml(row.chips, ['taste', 'reach', 'much', 'quiet', 'same', 'feed', 'swaps', 'you', 'open'])}</div>
       ${row.why.length ? `<ul class="why">${row.why.map(w => `<li data-src="${w.src === 'qloo' ? 'Qloo' : 'Feed'}">${esc(w.text)}</li>`).join('')}</ul>` : ''}
@@ -210,7 +211,7 @@ function restRow(row) {
 
 function renderResult() {
   const r = state.result;
-  state.startKey = (r.shortlist.find(reachable) || {}).key || null;
+  state.startKey = (r.shortlist.find(x => reachable(x) && !swappedBefore(x)) || {}).key || null;
   const readyFive = r.shortlist.slice(0, 5).filter(reachable).length;
   const shown = state.onlyReachable ? r.shortlist.filter(reachable) : r.shortlist;
   const five = shown.filter(x => x.position <= 5), rest = shown.filter(x => x.position > 5);
@@ -228,10 +229,12 @@ function renderResult() {
         <ul>${r.bigNames.map(b => `<li>${esc(b.name)}</li>`).join('') || '<li>None</li>'}</ul></div>
       <div class="side"><h3>Reading the labels</h3><p class="hint">Labels never change the order. They help you decide.</p>
         <ul>
+          <li>Smaller / Bigger reach<span>beyond that range, either way</span></li>
           <li>Similar reach<span>Qloo popularity from 0.05 below to 0.02 above ${r.seeds?.length ? 'your picks (median)' : 'yours'}</span></li>
           <li>Much bigger reach<span>0.05 or more above yours</span></li>
           <li>Quiet for 4+ months<span>no new episode in their feed</span></li>
           <li>Swapped with N shows<span>promo episodes in their feed</span></li>
+          <li>Swapped with you<span>found in your feed or theirs, any year</span></li>
         </ul></div>
     </div>
     <p class="usage">${r.usage.qloo + r.usage.feeds ? `This run: ${r.usage.qloo} Qloo calls, ${r.usage.feeds} feeds read, ${r.usage.llmCalls} LLM calls, ${r.seconds} s.` : 'This run reused data fetched in the last 24 hours.'} Run at ${esc(new Date(r.ranAt).toUTCString().slice(5, 22))} UTC${state.mode === 'recorded' ? ' (recorded mode; switch to Live to refetch)' : ''}.</p>`;
@@ -291,10 +294,19 @@ async function openDraft(key) {
     $('#draft-note').textContent = d.source === 'llm'
       ? 'Drafted by gpt-4.1-mini from this row\'s facts only. Every show and episode name was checked against the receipt.'
       : 'Fixed template' + (d.fallbackReason ? ` (the AI draft failed our fact check: ${d.fallbackReason})` : '') + '.';
-    dlg.dataset.to = d.to || '';
+    dlg.dataset.to = d.to || ''; syncPrepare();
   } catch (err) { $('#draft-body').value = ''; $('#draft-note').textContent = err.message; }
 }
-$('#draft-ok').addEventListener('change', e => { $('#draft-prepare').disabled = !e.target.checked || !$('#draft-body').value.trim(); });
+const PLACEHOLDER = /\[(downloads per episode|link to your show|Your name)\]/;
+const syncPrepare = () => {
+  const text = $('#draft-subject').value + ' ' + $('#draft-body').value;
+  const hole = text.match(PLACEHOLDER);
+  $('#draft-prepare').disabled = !$('#draft-ok').checked || !$('#draft-body').value.trim() || Boolean(hole);
+  $('#draft-left').textContent = hole ? `Fill in [${hole[1]}] first` : `${DRAFT_LIMIT - draftsUsed()} of ${DRAFT_LIMIT} drafts left this session`;
+};
+$('#draft-ok').addEventListener('change', syncPrepare);
+$('#draft-body').addEventListener('input', syncPrepare);
+$('#draft-subject').addEventListener('input', syncPrepare);
 $('#draft-prepare').addEventListener('click', () => {
   const s = $('#draft-subject').value, b = $('#draft-body').value;
   $('#draft-mail').href = `mailto:${encodeURIComponent(dlg.dataset.to || '')}?subject=${encodeURIComponent(s)}&body=${encodeURIComponent(b)}`;

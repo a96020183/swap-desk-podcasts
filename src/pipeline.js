@@ -98,7 +98,7 @@ export async function runShortlist({ itunesId, seeds = null, fresh = false, step
   const cands = await pool(list, 10, async e => {
     const m = e.meta || null;
     const feed = m?.feedUrl ? await readFeed(m.feedUrl, { fresh })
-      : { ok: false, error: e.idMismatch ? "Qloo's iTunes link points to a different show, so we did not read a feed" : e.itunesId ? 'no public feed found' : 'no iTunes id from Qloo' };
+      : { ok: false, error: e.idMismatch ? `Qloo's iTunes link (id ${e.itunesId}) points to a show with a different name, and an iTunes search for "${e.name}" found no match, so we did not read a feed` : e.itunesId ? 'no public feed found' : 'no iTunes id from Qloo' };
     done++; step('feeds', `Reading ${list.length} feeds`, { done, total: list.length });
     const { meta: _m, ...rest } = e;
     return {
@@ -112,7 +112,7 @@ export async function runShortlist({ itunesId, seeds = null, fresh = false, step
     name: show.name, artist: show.artist, author: hostFeed.author, ownerName: hostFeed.ownerName, ownerEmail: hostFeed.ownerEmail,
     description: hostFeed.description, popularity: hostEntity?.popularity ?? median(seedEntities.map(s => s.popularity)),
     sizeBase: hostEntity ? 'yours' : 'your picks', tags: hostEntity?.tags || [],
-    swaps: hostFeed.ok ? (await extractSwaps(show.name, hostFeed)).swaps : [],
+    swaps: hostFeed.ok ? (await extractSwaps(show.name, hostFeed, { allTime: true })).swaps : [],
   };
   await pool(cands, 6, async c => {
     if (!c.feed?.ok) { c.swaps = []; c.swapCheck = { checked: 0 }; return; }
@@ -130,7 +130,7 @@ export async function runShortlist({ itunesId, seeds = null, fresh = false, step
       c.compareTags = await qloo.sharedTagsCompare(anchorId, c.qid, { fresh });
     });
   }
-  const hostFacts = { name: show.name, episodes: hostFeed.ok ? hostFeed.episodeCount : null, cadence: hostFeed.ok ? hostFeed.cadence : null, since: hostFeed.ok ? hostFeed.firstYear : null };
+  const hostFacts = { link: `https://podcasts.apple.com/us/podcast/id${show.itunesId}`, name: show.name, episodes: hostFeed.ok ? hostFeed.episodeCount : null, cadence: hostFeed.ok ? hostFeed.cadence : null, since: hostFeed.ok ? hostFeed.firstYear : null };
   const row = c => rowView(host, c, { hostFacts, seeds: seedEntities, qlooParams: main.params, compareWith: hostEntity ? 'your show' : seedEntities[0]?.name });
 
   let llmOnly = [];
@@ -186,7 +186,7 @@ function rowView(host, c, ctx) {
       } : { error: f.error || 'feed not read' },
       call: { column: c.call?.column, position: c.position || null, reasons: c.call?.reasons || [] },
     },
-    _draft: { host: ctx.hostFacts || { name: host.name }, cand: { name: c.name, showName: c.showName, feed: { ownerName: f.ownerName, recent: (f.recent || []).slice(0, 3) }, others: c.others || [], sharedTags: c.compareTags?.length ? c.compareTags : c.sharedTags, openQuote: c.openQuote || '' } },
+    _draft: { host: ctx.hostFacts || { name: host.name }, cand: { name: c.name, showName: c.showName, feed: { ownerName: f.ownerName, recent: (f.recent || []).slice(0, 3) }, others: c.others || [], pastSwap: c.swappedWithYou || null, sharedTags: c.compareTags?.length ? c.compareTags : c.sharedTags, openQuote: c.openQuote || '' } },
   };
 }
 

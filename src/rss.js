@@ -85,6 +85,8 @@ export function parseFeed(xml, today = new Date().toISOString().slice(0, 10)) {
     firstYear: first ? Number(first.slice(0, 4)) : null,
     cadence: cadenceLabel(dated.map(i => i.date)),
     recent: items.slice(0, RULES.recentEpisodes),
+    // promo-looking episodes across the whole feed (newest 120), used to find past swaps with your own show
+    promoAll: items.filter(e => PROMO_RE.test(e.title)).slice(0, 120),
   };
 }
 
