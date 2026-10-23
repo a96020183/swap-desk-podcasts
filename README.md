@@ -2,22 +2,23 @@
 
 Swap Desk finds podcasts whose audiences overlap with yours, reads their feeds to see who trades promos, and drafts the invite. You press send.
 
-Indie hosts grow by trading promos with shows like theirs, and the hard part is picking whom to ask. Today they ask around on Discord, scroll similar-show lists, or pay for research tools. Swap Desk is meant to be free for hosts; the business would be hosting platforms that add it to their growth tab. Qloo ranks the shows, and every reason on screen comes from Qloo or from the other show's own feed.
+Indie hosts grow by trading promos with shows like theirs, and the hard part is picking whom to ask. Today they ask around on Discord, scroll similar-show lists, or pay for research tools. Swap Desk is meant to be free for hosts. The business case is hosting platforms: a host whose show grows stays on the platform, so a platform could add Swap Desk to its growth tab for a monthly fee per show. Qloo would license the taste data to that platform. None of this is tested with a platform yet. Qloo ranks the shows, and every reason on screen comes from Qloo or from the other show's own feed.
 
 ## What it does
 
 1. You type your show's name or paste its Apple Podcasts link. Swap Desk finds it with the iTunes Search API.
 2. Qloo returns the 50 podcasts closest to yours (`/v2/insights`, podcast to podcast, `feature.explainability=true`),
    with an affinity score and popularity. These are aggregate taste affinities, not listener-level data.
-   A second call with `filter.popularity.max` = your popularity + 0.02 (the size-capped list from our test) is shown in each receipt.
 3. Swap Desk reads each candidate's own public RSS feed: last episode, how often it publishes, episode count, first year,
    public contact, and its recent promo episodes. gpt-4.1-mini names the show each promo episode was for; a name is kept
    only if it appears word for word in that episode's text.
 4. The shortlist is **Qloo's top 20, in Qloo's order**, the same list the evidence page scores. The top 5 are
    **Your first five**. Nothing is moved or dropped. Size labels compare Qloo popularity with yours
-   (Smaller, Similar within 0.05, Bigger, **Much bigger reach** at +0.05 or more); feeds with no episode in 120 days get
+   (Similar from 0.05 below to 0.02 above yours, Smaller or Bigger beyond that, **Much bigger reach** at +0.05 or more; on the fallback, against the median of your picks); feeds with no episode in 120 days get
    **Quiet for N+ months**; shows from your own publisher or network, or that you swapped with in the last 12 months,
-   are labelled too. A checkbox hides quiet shows and shows with no contact; it never reorders.
+   are labelled too. The first row that is active and has a contact is marked **Start here**. A checkbox hides quiet
+   shows and shows with no contact; it never reorders. Rows 6 to 20 show the Qloo tags both shows carry, or say that Qloo
+   gave a score and no reason.
 5. Every row has a **Why** line built by code from fixed sentences. The material comes only from Qloo
    (shared tags from `/v2/analysis/compare`, or tags on both entities) or from facts in the feeds. The LLM never writes it.
 6. **Receipt** opens three panels: *Qloo says* (entity, rank, affinity, popularity, shared tags, query), *Their feed says*
@@ -39,7 +40,7 @@ The `/evidence` page shows how the ranking was checked: 48 real podcasts and 185
 taken from their own feeds, with the test committed before any feed was fetched.
 
 - The 48 shows were found because they write about swaps, so they are easier cases than a typical host.
-- In its top 20 (the cutoff fixed in advance), Qloo found 24.3% of the real partners; gpt-4.1-mini without web search found 6.1%; the most popular shows in the genre 3.7%.
+- In its top 20 (the cutoff fixed in advance), Qloo found 24.3% of the real partners (11.6% when counting only swaps since 2025); gpt-4.1-mini without web search found 6.1%; the most popular shows in the genre 3.7%.
 - gpt-5.5 with web search found 19.0% on the same 48 shows. That gap is too small to call, so we treat it as a tie.
 - Day-one checks on the agent layer (protocol committed before any candidate feed was fetched): reading feeds for swap
   habits did **not** move real partners up enough to pass (Test A), so swap habits are shown on each row and never change
@@ -96,7 +97,7 @@ restart, and the first request after sleeping takes longer.
   Swap Desk does not open podcasts.apple.com pages.
 - **Each show's public RSS feed**, fetched at most once a day per feed; only parsed facts are cached. Email and website
   shown on a row are the ones the show itself publishes in its feed.
-- **Qloo** `/search`, `/v2/insights` (twice per show, plus one genre list), `/v2/analysis/compare` for the first five.
+- **Qloo** `/search`, `/v2/insights` (once per show, plus one genre list), `/v2/analysis/compare` for the first five.
   Responses stay in a git-ignored server cache.
 - **OpenAI** gets show names, episode titles and episode descriptions. It never gets email addresses.
 

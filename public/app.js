@@ -119,7 +119,7 @@ function renderFallback(r) {
     const on = btn.getAttribute('aria-pressed') !== 'true';
     if (on && state.picks.length >= 5) return;
     btn.setAttribute('aria-pressed', String(on));
-    state.picks = on ? [...state.picks, { qid: s.qid, name: s.name }] : state.picks.filter(p => p.qid !== s.qid);
+    state.picks = on ? [...state.picks, { qid: s.qid, name: s.name, popularity: s.popularity }] : state.picks.filter(p => p.qid !== s.qid);
     sync();
   };
   $('#picks').querySelectorAll('.pick').forEach(b => b.addEventListener('click', () => toggle(b, all[b.dataset.i])));
@@ -155,16 +155,15 @@ function receiptHtml(row) {
     ${f.openQuote ? `<p style="margin:8px 0 0">Channel description: &ldquo;${esc(f.openQuote)}&rdquo;</p>` : ''}`;
   return `<div class="receipt">
     <section><h4>Qloo says</h4><dl>
-      <dt>Entity</dt><dd>${esc(q.name)}<br><span style="font:11px var(--mono);color:var(--ink-3)">${esc(q.entityId)}</span></dd>
+      <dt>Entity</dt><dd>${esc(q.name)}</dd>
       <dt>Rank</dt><dd>${q.seed ? 'Your pick' : '#' + esc(q.rank) + ' of 50'}</dd>
       <dt>Affinity</dt><dd>${num(q.affinity)}</dd>
-      <dt>Popularity</dt><dd>${num(q.popularity)}${q.hostPopularity != null ? ` (yours ${num(q.hostPopularity)})` : ''}</dd>
-      <dt>Size-capped list</dt><dd>${q.similarParams ? (q.inSimilarReachList ? 'In it' : 'Not in it') : 'Not asked'}</dd>
+      <dt>Popularity</dt><dd>${num(q.popularity)}${q.hostPopularity != null ? ` (${q.sizeBase === 'yours' ? 'yours' : 'median of your picks'} ${num(q.hostPopularity)})` : ''}</dd>
       <dt>Tags</dt><dd>${esc(q.tags.join(', ') || 'none')}</dd>
       ${q.compareTags ? `<dt>In common</dt><dd>${esc(q.compareTags.join(', '))} <span style="color:var(--ink-3)">(compare with ${esc(q.compareWith)})</span></dd>` : ''}
-      ${q.explainScores ? `<dt>Explainability</dt><dd class="params">${q.explainScores.map(x => esc(x.id) + ': ' + (x.score == null ? 'n/a' : Number(x.score).toFixed(3))).join('<br>')}</dd>` : ''}
-      <dt>Query</dt><dd class="params">${Object.entries(q.params || {}).map(([k, v]) => esc(k + '=' + v)).join('<br>')}${q.similarParams ? '<br>2nd call adds filter.popularity.max=' + esc(q.similarParams['filter.popularity.max']) : ''}<br>GET /v2/insights</dd>
-    </dl></section>
+      ${q.explainScores ? `<dt>Explainability</dt><dd>${q.explainScores.map(x => esc(x.name) + ' ' + (x.score == null ? 'n/a' : Number(x.score).toFixed(2))).join('<br>')}</dd>` : ''}
+    </dl>
+    <details class="raw"><summary>Raw request</summary><p class="params">GET /v2/insights<br>${Object.entries(q.params || {}).map(([k, v]) => esc(k + '=' + v)).join('<br>')}<br>entity: ${esc(q.entityId)}</p></details></section>
     <section><h4>Their feed says</h4>${feed}</section>
     <section><h4>Our call</h4><dl>
       <dt>Position</dt><dd>${c.position ? '#' + c.position + (c.column === 'firstFive' ? ', first five' : '') : 'Below the top 20'}, in Qloo's order</dd>
@@ -173,17 +172,24 @@ function receiptHtml(row) {
   </div>`;
 }
 
+const isQuiet = row => row.chips.some(c => c.k === 'quiet');
+const isUnmatched = row => row.chips.some(c => c.text === 'Feed not matched');
+const reachable = row => !isQuiet(row) && !isUnmatched(row) && Boolean(row.contact || row.website);
+
 function firstFiveRow(row) {
-  return `<div class="row" data-key="${esc(row.key)}">
+  const why = !reachable(row) ? (isUnmatched(row) ? 'No feed matched' : isQuiet(row) ? 'Quiet feed' : 'No contact in feed') : '';
+  return `<div class="row${row.key === state.startKey ? ' start' : ''}" data-key="${esc(row.key)}">
     <div class="num">${pad(row.position)}</div>
     ${row.artwork ? `<img class="art" src="${esc(row.artwork)}" alt="" loading="lazy">` : '<div class="art"></div>'}
     <div>
+      ${row.key === state.startKey ? '<div class="startmark">Start here · first active show with a contact</div>' : ''}
       <div class="name">${esc(row.name)}</div><div class="by">${esc(row.artist)}</div>
       <div class="chips">${chipHtml(row.chips, ['taste', 'reach', 'much', 'quiet', 'same', 'feed', 'swaps', 'you', 'open'])}</div>
       ${row.why.length ? `<ul class="why">${row.why.map(w => `<li data-src="${w.src === 'qloo' ? 'Qloo' : 'Feed'}">${esc(w.text)}</li>`).join('')}</ul>` : ''}
     </div>
     <div class="acts">
-      <button class="small" type="button" data-draft="${esc(row.key)}">Draft invite</button>
+      <button class="small${why ? ' ghost' : ''}" type="button" data-draft="${esc(row.key)}">Draft invite</button>
+      ${why ? `<span class="contact warn">${why}</span>` : ''}
       <span class="contact">${row.contact ? 'Email in feed' : row.website ? `<a href="${esc(row.website)}" target="_blank" rel="noopener">Website</a>` : 'No public contact'}</span>
       <button class="link" type="button" data-receipt="${esc(row.key)}">Receipt</button>
     </div>
@@ -196,7 +202,7 @@ function restRow(row) {
   const taste = row.chips.find(c => c.k === 'taste');
   return `<div class="line" data-key="${esc(row.key)}">
     <div class="num">${pad(row.position)}</div>
-    <div class="name">${esc(row.name)}</div>
+    <div><div class="name">${row.key === state.startKey ? '<span class="startdot">Start here</span> ' : ''}${esc(row.name)}</div><div class="tagline">${esc(row.tagLine || '')}</div></div>
     <div class="chips">${chipHtml([taste, ...two].filter(Boolean))}</div>
     <button class="link" type="button" data-receipt="${esc(row.key)}">Receipt</button>
   </div>`;
@@ -204,7 +210,8 @@ function restRow(row) {
 
 function renderResult() {
   const r = state.result;
-  const reachable = row => !row.chips.some(c => c.k === 'quiet' || c.text === 'Feed not matched') && (row.contact || row.website);
+  state.startKey = (r.shortlist.find(reachable) || {}).key || null;
+  const readyFive = r.shortlist.slice(0, 5).filter(reachable).length;
   const shown = state.onlyReachable ? r.shortlist.filter(reachable) : r.shortlist;
   const five = shown.filter(x => x.position <= 5), rest = shown.filter(x => x.position > 5);
   $('#footline').innerHTML = r.seeds?.length
@@ -213,7 +220,7 @@ function renderResult() {
   const desk = `
     ${r.seeds?.length ? `<p class="based">Based on your picks: ${esc(r.seeds.join(', '))}. Qloo has not seen your show.</p>` : ''}
     <label class="only"><input type="checkbox" id="only" ${state.onlyReachable ? 'checked' : ''}> Hide quiet shows and shows with no contact <span>(hides rows, never reorders)</span></label>
-    <div class="five"><div class="five-head"><h3>Your first five</h3><span>${r.seeds?.length ? 'Qloo’s matches for your picks, in Qloo’s order' : 'Top 20 of Qloo’s matches, in Qloo’s order'}</span></div>
+    <div class="five"><div class="five-head"><h3>${r.seeds?.length ? 'Starting points from your picks' : 'Your first five'}</h3><span>${r.seeds?.length ? 'Not validated: in our test this path rarely found real partners' : 'Top 20 of Qloo’s matches, in Qloo’s order'} &middot; ready to contact now: ${readyFive} of ${Math.min(5, r.shortlist.length)}</span></div>
       ${five.map(firstFiveRow).join('') || '<p class="based">None of Qloo’s top five pass the filter.</p>'}</div>
     ${rest.length ? `<div class="rest"><h3>Next on the list</h3>${rest.map(restRow).join('')}</div>` : ''}
     <div class="sides">
@@ -221,7 +228,7 @@ function renderResult() {
         <ul>${r.bigNames.map(b => `<li>${esc(b.name)}</li>`).join('') || '<li>None</li>'}</ul></div>
       <div class="side"><h3>Reading the labels</h3><p class="hint">Labels never change the order. They help you decide.</p>
         <ul>
-          <li>Similar reach<span>Qloo popularity within 0.05 of yours</span></li>
+          <li>Similar reach<span>Qloo popularity from 0.05 below to 0.02 above ${r.seeds?.length ? 'your picks (median)' : 'yours'}</span></li>
           <li>Much bigger reach<span>0.05 or more above yours</span></li>
           <li>Quiet for 4+ months<span>no new episode in their feed</span></li>
           <li>Swapped with N shows<span>promo episodes in their feed</span></li>
@@ -273,6 +280,8 @@ async function openDraft(key) {
   }
   $('#draft-subject').value = ''; $('#draft-body').value = 'Writing a draft from the facts on this row…';
   $('#draft-note').textContent = '';
+  const quiet = row.chips.find(c => c.k === 'quiet');
+  if (quiet) $('#draft-to').innerHTML += `<br><b>${esc(quiet.text)}.</b> They may not reply.`;
   dlg.showModal();
   try {
     const d = await post('/api/draft', { key: state.key, row: key });

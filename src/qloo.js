@@ -53,6 +53,7 @@ export function toEntity(e, rank) {
     popularity: typeof e.popularity === 'number' ? e.popularity : null,
     affinity: typeof e.query?.affinity === 'number' ? e.query.affinity : null,
     explain: e.query?.explainability ?? null,
+    image: e.properties?.image?.url || '',
     tags: tagsOf(e),
     rank,
   };

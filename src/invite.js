@@ -3,6 +3,11 @@
 import { llmJson, llmAvailable } from './openai.js';
 import { appearsVerbatim } from './util.js';
 
+// Apple-style categories read like labels in a letter; only finer topics go into the draft.
+const BROAD = new Set(['society & culture', 'comedy', 'news', 'arts', 'education', 'business', 'health & fitness', 'tv & film',
+  'music', 'sports', 'technology', 'leisure', 'religion & spirituality', 'kids & family', 'science', 'history', 'fiction',
+  'true crime', 'government', 'personal journals', 'podcasts']);
+
 export function inviteFacts(host, c) {
   const recent = (c.feed?.recent || []).slice(0, 3).map(e => e.title).filter(Boolean);
   return {
@@ -12,30 +17,30 @@ export function inviteFacts(host, c) {
     hostSince: host.since || null,
     theirShow: c.showName || c.name,
     theirHost: c.feed?.ownerName || '',
-    recentEpisodes: recent,
+    theirRecentEpisodes: recent,
     swappedWith: (c.others || []).slice(0, 3).map(s => s.show),
     swapEpisodes: (c.others || []).slice(0, 3).map(s => s.episode),
-    commonGround: c.sharedTags || [],
+    commonGround: (c.sharedTags || []).filter(t => !BROAD.has(t.toLowerCase())),
     openQuote: c.openQuote || '',
   };
 }
 
 function allowedNames(f) {
-  return [f.hostShow, f.theirShow, ...f.recentEpisodes, ...f.swappedWith, ...f.swapEpisodes].filter(Boolean);
+  return [f.hostShow, f.theirShow, ...f.theirRecentEpisodes, ...f.swappedWith, ...f.swapEpisodes].filter(Boolean);
 }
 
 export function templateInvite(f) {
   const hi = f.theirHost ? `Hi ${f.theirHost.split(/[,&]| and /)[0].trim()},` : 'Hi there,';
   const about = [f.hostEpisodes ? `${f.hostEpisodes} episodes` : '', f.hostCadence, f.hostSince ? `since ${f.hostSince}` : ''].filter(Boolean).join(', ');
   const ground = f.commonGround.length ? ` Our shows cover similar ground (${f.commonGround.map(t => t.toLowerCase()).join(', ')}).` : '';
-  const ep = f.recentEpisodes[0] ? ` I saw your recent episode "${f.recentEpisodes[0]}".` : '';
+  const ep = f.theirRecentEpisodes[0] ? ` I saw your recent episode "${f.theirRecentEpisodes[0]}".` : '';
   return {
-    subject: `Trailer swap? ${f.hostShow} x ${f.theirShow}`,
+    subject: `Trailer swap with ${f.hostShow}?`,
     body: [
       hi, '',
-      `I host ${f.hostShow}${about ? ` (${about})` : ''}.${ground}${ep}`,
+      `I host ${f.hostShow}${about ? ` (${about})` : ''}: [link to your show].${ep}${ground}`,
       '',
-      'Would you be up for a trailer swap? We each play a 30-second trailer for the other show near the top of an upcoming episode. I can send ours and a short read script this week.',
+      'Would you be up for a trailer swap? We each play a 30-second trailer for the other show near the top of an upcoming episode. We get about [downloads per episode] downloads an episode. I can send our trailer and a short read script this week.',
       '', 'Thanks,', '[Your name]',
     ].join('\n'),
     source: 'template',
@@ -67,7 +72,10 @@ export async function draftInvite(host, c, { note = '' } = {}) {
     'each show plays a 30-second trailer for the other near the top of an upcoming episode. Under 120 words. Plain words, no hype, no em dashes.',
     'Use ONLY the facts below. Do not invent episodes, numbers, guests, or praise. Do not claim the sender has listened to anything.',
     'Say in one line what the shows have in common using commonGround in plain words; never use the word "tag" or "Qloo".',
-    'Mention the sender show’s episode count, cadence and start year if given. Subject must name both shows.',
+    'Mention the sender show’s episode count, cadence and start year if given, followed by the placeholder "[link to your show]".',
+    'theirRecentEpisodes are episodes of the RECIPIENT’s show, not the sender’s. If it is not empty, mention the first one by its exact title as their episode, in the first two sentences.',
+    'Include the sentence "We get about [downloads per episode] downloads an episode." exactly, for the sender to fill in.',
+    'Subject: short and casual, like "Trailer swap with <sender show>?".',
     'Wrap every podcast name and every episode title you mention in double square brackets, like [[Name]].',
     'Sign off with "[Your name]".',
     `Facts (JSON): ${JSON.stringify(f)}`,
@@ -78,7 +86,13 @@ export async function draftInvite(host, c, { note = '' } = {}) {
     const r = await llmJson(prompt, { maxTokens: 500, temperature: 0.4, cacheTtl: 0 });
     const subject = String(r.subject || '').trim(), body = String(r.body || '').trim();
     if (!subject || !body) throw new Error('empty');
-    const problem = checkDraft(subject + '\n' + body, f);
+    let problem = checkDraft(subject + '\n' + body, f);
+    if (!problem && f.theirRecentEpisodes[0]) {
+      const ep = f.theirRecentEpisodes[0];
+      const sentence = strip(body).split(/(?<=[.!?])\s+/).find(x => appearsVerbatim(ep, x));
+      if (!sentence) problem = 'did not name their recent episode';
+      else if (/\b(my|our)\b/i.test(sentence.replace(ep, ''))) problem = 'credited their episode to the sender';
+    }
     if (problem) return { ...templateInvite(f), facts: f, fallbackReason: problem };
     return { subject: strip(subject), body: strip(body), source: 'llm', facts: f };
   } catch (e) {

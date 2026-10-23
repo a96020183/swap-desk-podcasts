@@ -41,7 +41,7 @@ export const RULES = {
   firstFive: 5,
   pausedDays: 120,         // no new episode for this long -> "Quiet for N months" label
   recentSwapDays: 365,     // swapped with you inside this window -> labelled
-  similarReachGap: 0.02,   // second Qloo call: filter.popularity.max = yours + 0.02
+  similarReachGap: 0.02,   // up to this much above yours still counts as "Similar reach" (same margin as the test's size-capped list)
   outOfReachGap: 0.05,     // popularity this much above yours -> "Much bigger reach" label
   recentEpisodes: 40,      // only the 40 most recent episodes of a feed are read for swaps
   draftsPerSession: 5,

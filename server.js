@@ -70,7 +70,7 @@ async function api(req, res, url) {
     const b = await readBody(req);
     const itunesId = parseItunesId(String(b.itunesId || ''));
     if (!itunesId) return send(res, 400, { error: 'Missing show id.' });
-    const seeds = Array.isArray(b.seeds) ? b.seeds.filter(s => s && s.qid && s.name).slice(0, 5).map(s => ({ qid: String(s.qid), name: String(s.name).slice(0, 200), tags: [] })) : null;
+    const seeds = Array.isArray(b.seeds) ? b.seeds.filter(s => s && s.qid && s.name).slice(0, 5).map(s => ({ qid: String(s.qid), name: String(s.name).slice(0, 200), tags: [], popularity: Number.isFinite(Number(s.popularity)) ? Math.min(1, Math.max(0, Number(s.popularity))) : null })) : null;
     if (seeds && seeds.length < 1) return send(res, 400, { error: 'Pick at least one show.' });
     return send(res, 200, startRun({ itunesId, seeds, live: Boolean(b.live) }));
   }
@@ -83,7 +83,7 @@ async function api(req, res, url) {
     const q = (url.searchParams.get('q') || '').trim();
     if (q.length < 2) return send(res, 200, { results: [] });
     const r = await qloo.findPodcast(q);
-    return send(res, 200, { results: r.results.slice(0, 5).map(e => ({ qid: e.qid, name: e.name })) });
+    return send(res, 200, { results: r.results.slice(0, 5).map(e => ({ qid: e.qid, name: e.name, popularity: e.popularity })) });
   }
   if (p === '/api/draft' && req.method === 'POST') {
     const b = await readBody(req);

@@ -9,6 +9,8 @@ import { whyParts, chips, sharedTags, explainedBy as whyExplained } from './why.
 import { usage } from './usage.js';
 import { sameShow, normalize, namesAgree } from './util.js';
 
+const median = xs => { const v = xs.filter(x => typeof x === 'number').sort((a, b) => a - b); return v.length ? v[Math.floor((v.length - 1) / 2)] : null; };
+
 async function pool(items, n, fn) {
   const out = new Array(items.length); let i = 0;
   await Promise.all(Array.from({ length: Math.min(n, items.length) }, async () => {
@@ -40,7 +42,7 @@ export async function seedSuggestions(show, feed) {
     if (sameShow(name, show.name)) continue;
     let hit = null;
     try { hit = (await qloo.findPodcast(name)).results.find(r => normalize(r.name) === normalize(name)) || null; } catch { hit = null; }
-    out.push(hit ? { name: hit.name, inQloo: true, qid: hit.qid } : { name, inQloo: false });
+    out.push(hit ? { name: hit.name, inQloo: true, qid: hit.qid, popularity: hit.popularity } : { name, inQloo: false });
   }
   return out;
 }
@@ -69,10 +71,6 @@ export async function runShortlist({ itunesId, seeds = null, fresh = false, step
 
   const signal = hostEntity ? [hostEntity.qid] : seedEntities.map(s => s.qid);
   const main = await qloo.similarPodcasts(signal, { take: RULES.candidates, explain: true, fresh });
-  let similar = null;
-  if (hostEntity?.popularity != null) {
-    similar = await qloo.similarPodcasts(signal, { take: RULES.candidates, popularityMax: hostEntity.popularity + RULES.similarReachGap, fresh });
-  }
   const genreTag = (hostEntity?.tags || seedEntities[0]?.tags || [])[0];
   const bigNamesRaw = genreTag ? await qloo.popularInGenre(genreTag.id, 10, { fresh }) : [];
 
@@ -81,7 +79,6 @@ export async function runShortlist({ itunesId, seeds = null, fresh = false, step
   // Fallback: your picks are shown above the list, not inside it; the list is what Qloo finds from them.
   if (seedEntities.length) list = list.filter(e => !seedEntities.some(s => s.qid === e.qid || sameShow(s.name, e.name)));
   list = list.slice(0, RULES.candidates).map((e, i) => ({ ...e, rank: i + 1 }));
-  const similarIds = new Set((similar?.list || []).map(e => e.qid));
 
   step('feeds', `Reading ${list.length} feeds`, { done: 0, total: list.length });
   const meta = await lookupShows(list.map(e => e.itunesId).filter(Boolean));
@@ -105,15 +102,16 @@ export async function runShortlist({ itunesId, seeds = null, fresh = false, step
     done++; step('feeds', `Reading ${list.length} feeds`, { done, total: list.length });
     const { meta: _m, ...rest } = e;
     return {
-      ...rest, showName: m?.name || e.name, artist: m?.artist || '', artwork: m?.artwork || '', genre: m?.genre || '',
-      feedUrl: m?.feedUrl || '', feed, inSimilar: similarIds.has(e.qid), feedMismatch: Boolean(e.idMismatch && !m),
+      ...rest, showName: m?.name || e.name, artist: m?.artist || '', artwork: m?.artwork || e.image || '', genre: m?.genre || '',
+      feedUrl: m?.feedUrl || '', feed, feedMismatch: Boolean(e.idMismatch && !m),
     };
   });
 
   step('swaps', 'Reading promo episodes');
   const host = {
     name: show.name, artist: show.artist, author: hostFeed.author, ownerName: hostFeed.ownerName, ownerEmail: hostFeed.ownerEmail,
-    description: hostFeed.description, popularity: hostEntity?.popularity ?? null, tags: hostEntity?.tags || [],
+    description: hostFeed.description, popularity: hostEntity?.popularity ?? median(seedEntities.map(s => s.popularity)),
+    sizeBase: hostEntity ? 'yours' : 'your picks', tags: hostEntity?.tags || [],
     swaps: hostFeed.ok ? (await extractSwaps(show.name, hostFeed)).swaps : [],
   };
   await pool(cands, 6, async c => {
@@ -133,7 +131,7 @@ export async function runShortlist({ itunesId, seeds = null, fresh = false, step
     });
   }
   const hostFacts = { name: show.name, episodes: hostFeed.ok ? hostFeed.episodeCount : null, cadence: hostFeed.ok ? hostFeed.cadence : null, since: hostFeed.ok ? hostFeed.firstYear : null };
-  const row = c => rowView(host, c, { hostFacts, seeds: seedEntities, qlooParams: main.params, similarParams: similar?.params, compareWith: hostEntity ? 'your show' : seedEntities[0]?.name });
+  const row = c => rowView(host, c, { hostFacts, seeds: seedEntities, qlooParams: main.params, compareWith: hostEntity ? 'your show' : seedEntities[0]?.name });
 
   let llmOnly = [];
   try { llmOnly = await llmOnlyList(show, hostFeed.description); } catch { llmOnly = []; }
@@ -167,16 +165,18 @@ function rowView(host, c, ctx) {
     artist: c.artist, artwork: c.artwork, seed: Boolean(c.seed),
     chips: chips(host, c),
     why: whyParts(host, c, { seeds: ctx.seeds }),
+    tagLine: c.sharedTags.length ? `Qloo tags you share: ${c.sharedTags.join(', ')}` : 'Qloo gave a score, not a reason',
     contact: f.ownerEmail || null,
     website: /^https?:\/\//i.test(f.link || '') ? f.link : null,
     receipt: {
       qloo: {
         name: c.name, entityId: c.qid, rank: c.rank, affinity: c.affinity, popularity: c.popularity,
-        inSimilarReachList: c.inSimilar, tags: (c.tags || []).map(t => t.name), sharedTags: c.sharedTags, compareTags: c.compareTags || null,
+        tags: (c.tags || []).map(t => t.name), sharedTags: c.sharedTags, compareTags: c.compareTags || null,
         compareWith: c.compareTags ? ctx.compareWith : null,
         explainedBy: whyExplained(c, ctx.seeds),
-        explainScores: Array.isArray(c.explain?.['signal.interests.entities']) ? c.explain['signal.interests.entities'].map(x => ({ id: x.entity_id, score: x.score })) : null, params: ctx.qlooParams, similarParams: ctx.similarParams || null,
-        hostPopularity: host.popularity, seed: Boolean(c.seed),
+        explainScores: ctx.seeds.length > 1 && Array.isArray(c.explain?.['signal.interests.entities'])
+          ? c.explain['signal.interests.entities'].map(x => ({ name: ctx.seeds.find(s => s.qid === x.entity_id)?.name || x.entity_id, score: x.score })) : null,
+        params: ctx.qlooParams, hostPopularity: host.popularity, sizeBase: host.sizeBase, seed: Boolean(c.seed),
       },
       feed: f.ok ? {
         url: c.feedUrl, lastEpisode: f.lastEpisode, daysSinceLast: f.daysSinceLast, episodeCount: f.episodeCount,
