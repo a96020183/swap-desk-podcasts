@@ -97,9 +97,7 @@ export async function sharedTagsCompare(aId, bId, opts) {
   } catch { return null; }
 }
 
-// Request parameters as shown in the receipt (entity ids shortened).
+// Request parameters exactly as sent, so a judge can repeat the call from the receipt.
 function describe(params) {
-  const out = { ...params };
-  if (out['signal.interests.entities']) out['signal.interests.entities'] = `${out['signal.interests.entities'].split(',').length} show(s)`;
-  return out;
+  return { ...params };
 }

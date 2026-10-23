@@ -78,10 +78,8 @@ export async function runShortlist({ itunesId, seeds = null, fresh = false, step
 
   // Candidate list: seeds first (fallback only), then Qloo's ranking; your own show removed.
   let list = main.list.filter(e => !(hostEntity && e.qid === hostEntity.qid) && !(e.itunesId && e.itunesId === show.itunesId) && !sameShow(e.name, show.name));
-  if (seedEntities.length) {
-    const seedRows = seedEntities.map(s => ({ ...s, seed: true }));
-    list = [...seedRows, ...list.filter(e => !seedEntities.some(s => s.qid === e.qid))];
-  }
+  // Fallback: your picks are shown above the list, not inside it; the list is what Qloo finds from them.
+  if (seedEntities.length) list = list.filter(e => !seedEntities.some(s => s.qid === e.qid || sameShow(s.name, e.name)));
   list = list.slice(0, RULES.candidates).map((e, i) => ({ ...e, rank: i + 1 }));
   const similarIds = new Set((similar?.list || []).map(e => e.qid));
 
@@ -108,7 +106,7 @@ export async function runShortlist({ itunesId, seeds = null, fresh = false, step
     const { meta: _m, ...rest } = e;
     return {
       ...rest, showName: m?.name || e.name, artist: m?.artist || '', artwork: m?.artwork || '', genre: m?.genre || '',
-      feedUrl: m?.feedUrl || '', feed, inSimilar: similarIds.has(e.qid),
+      feedUrl: m?.feedUrl || '', feed, inSimilar: similarIds.has(e.qid), feedMismatch: Boolean(e.idMismatch && !m),
     };
   });
 
@@ -134,7 +132,8 @@ export async function runShortlist({ itunesId, seeds = null, fresh = false, step
       c.compareTags = await qloo.sharedTagsCompare(anchorId, c.qid, { fresh });
     });
   }
-  const row = c => rowView(host, c, { seeds: seedEntities, qlooParams: main.params, similarParams: similar?.params, compareWith: hostEntity ? 'your show' : seedEntities[0]?.name });
+  const hostFacts = { name: show.name, episodes: hostFeed.ok ? hostFeed.episodeCount : null, cadence: hostFeed.ok ? hostFeed.cadence : null, since: hostFeed.ok ? hostFeed.firstYear : null };
+  const row = c => rowView(host, c, { hostFacts, seeds: seedEntities, qlooParams: main.params, similarParams: similar?.params, compareWith: hostEntity ? 'your show' : seedEntities[0]?.name });
 
   let llmOnly = [];
   try { llmOnly = await llmOnlyList(show, hostFeed.description); } catch { llmOnly = []; }
@@ -169,12 +168,14 @@ function rowView(host, c, ctx) {
     chips: chips(host, c),
     why: whyParts(host, c, { seeds: ctx.seeds }),
     contact: f.ownerEmail || null,
+    website: /^https?:\/\//i.test(f.link || '') ? f.link : null,
     receipt: {
       qloo: {
         name: c.name, entityId: c.qid, rank: c.rank, affinity: c.affinity, popularity: c.popularity,
         inSimilarReachList: c.inSimilar, tags: (c.tags || []).map(t => t.name), sharedTags: c.sharedTags, compareTags: c.compareTags || null,
         compareWith: c.compareTags ? ctx.compareWith : null,
-        explainedBy: whyExplained(c, ctx.seeds), params: ctx.qlooParams, similarParams: ctx.similarParams || null,
+        explainedBy: whyExplained(c, ctx.seeds),
+        explainScores: Array.isArray(c.explain?.['signal.interests.entities']) ? c.explain['signal.interests.entities'].map(x => ({ id: x.entity_id, score: x.score })) : null, params: ctx.qlooParams, similarParams: ctx.similarParams || null,
         hostPopularity: host.popularity, seed: Boolean(c.seed),
       },
       feed: f.ok ? {
@@ -185,7 +186,7 @@ function rowView(host, c, ctx) {
       } : { error: f.error || 'feed not read' },
       call: { column: c.call?.column, position: c.position || null, reasons: c.call?.reasons || [] },
     },
-    _draft: { host: { name: host.name }, cand: { name: c.name, showName: c.showName, feed: { ownerName: f.ownerName, recent: (f.recent || []).slice(0, 3) }, others: c.others || [], sharedTags: c.sharedTags, openQuote: c.openQuote || '' } },
+    _draft: { host: ctx.hostFacts || { name: host.name }, cand: { name: c.name, showName: c.showName, feed: { ownerName: f.ownerName, recent: (f.recent || []).slice(0, 3) }, others: c.others || [], sharedTags: c.compareTags?.length ? c.compareTags : c.sharedTags, openQuote: c.openQuote || '' } },
   };
 }
 

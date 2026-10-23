@@ -103,3 +103,22 @@ test('Qloo rows join a feed only when the names agree', () => {
   assert.ok(namesAgree('Locked On Hawks - Daily Podcast On The Atlanta Hawks', 'Locked On Hawks'));
   assert.ok(!namesAgree('Missing Pieces - NPE Life', 'LA Calling'));
 });
+
+test('size labels come from the popularity gap, not from the size-capped list', async () => {
+  const { reachOf } = await import('../src/rank.js');
+  assert.equal(reachOf(0.612, 0.310), 'smaller');
+  assert.equal(reachOf(0.612, 0.60), 'similar');
+  assert.equal(reachOf(0.612, 0.65), 'bigger');
+  assert.equal(reachOf(0.612, 0.70), 'much');
+  assert.equal(reachOf(null, 0.7), null);
+});
+
+test('drafts may not talk about tags or Qloo', () => {
+  const c = cand(1, { feed: feed({ recent: [] }) }); c.others = []; c.sharedTags = ['Genealogy'];
+  const f = inviteFacts({ name: 'My Show', episodes: 133, cadence: 'weekly', since: 2019 }, c);
+  assert.match(checkDraft('Qloo says our tags match.', f), /tags or Qloo/);
+  const t = templateInvite(f);
+  assert.match(t.body, /133 episodes, weekly, since 2019/);
+  assert.match(t.body, /genealogy/);
+  assert.equal(checkDraft(t.subject + '\n' + t.body, f), null);
+});

@@ -63,6 +63,7 @@ async function main() {
       <div><b>${p1(k.rows[1].v[2])}</b><span>gpt-4.1-mini, no web search</span></div>
       <div><b>${p1(k.rows[2].v[2])}</b><span>most popular in genre</span></div>
     </div>
+    <p class="note" style="color:var(--ink-2);font-size:15px">Short version: Qloo found about four times as many real partners as an LLM without web search. Against a top LLM with web search, the gap was too small to call.</p>
     <p class="note">Top 20 was fixed before we looked (commit <span class="mono">${c.locked}</span>). Qloo minus the LLM-only list: +${k.diffTop20.value} points, 95% interval ${ci(k.diffTop20.ci)}.</p>
 
     <h2>Every cutoff</h2>
@@ -91,7 +92,7 @@ async function main() {
         <li>In its top 20, Qloo found about <b>one in four</b> of the partners these shows really chose. An LLM-only list without web search found one in sixteen.</li>
         <li>Against that LLM-only list, it holds for mid-size and small shows (${p1(f.midSmall.qloo)} vs ${p1(f.midSmall.llm)}), for the smallest third (${p1(f.smallestThird.qloo)} vs ${p1(f.smallestThird.llm)}), and when the two shows have different owners (${p1(f.differentOwners.qloo)} vs ${p1(f.differentOwners.llm)}).</li>
         <li>One call returns a ranked list with iTunes IDs and popularity, so every row can be joined to its public feed.</li>
-        <li>For a family history show, Qloo ranked NPE Stories and CutOff Genes second and third. The show really swapped with both.</li>
+        <li>For a family history show (Everything's Relative, one of the 48 and the Small example on the home page), Qloo ranked NPE Stories and CutOff Genes second and third. The show really swapped with both, before the 12 months the desk checks for past swaps.</li>
       </ul></div>
       <div><h3>What it doesn't</h3><ul>
         <li><b>Beat a top LLM with web search.</b> On the same 48 shows, gpt-5.5 with web search found 19.0% in its top 20 and Qloo 24.3%. That gap is too small to call. Mixing the two lists did not help.</li>

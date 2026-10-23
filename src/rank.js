@@ -48,6 +48,16 @@ export function swapsWithOthers(host, c) {
   return seen;
 }
 
+// Size label from Qloo popularity (a percentile, not downloads): difference between their value and yours.
+export function reachOf(mine, theirs) {
+  if (mine == null || theirs == null) return null;
+  const d = theirs - mine;
+  if (d >= RULES.outOfReachGap) return 'much';
+  if (d > RULES.similarReachGap) return 'bigger';
+  if (d >= -RULES.outOfReachGap) return 'similar';
+  return 'smaller';
+}
+
 // The shortlist is Qloo's top 20 in Qloo's order: the same list the evidence page scores (24.3% at k = 20).
 // Nothing is moved or dropped. Size, quiet feeds, same publisher or network, and past swaps become labels only.
 export function rankCandidates(host, cands, { today = new Date().toISOString().slice(0, 10), bigNames = [] } = {}) {
@@ -56,8 +66,7 @@ export function rankCandidates(host, cands, { today = new Date().toISOString().s
     const flags = [];
     c.others = swapsWithOthers(host, c);
     c.swappedWithYou = swappedWith(host, c, today);
-    c.reach = host.popularity == null || c.popularity == null ? null
-      : c.popularity - host.popularity >= RULES.outOfReachGap ? 'much' : (c.inSimilar ? 'similar' : 'bigger');
+    c.reach = reachOf(host.popularity, c.popularity);
     c.samePublisher = samePublisher(host, c);
     c.sameNetwork = !c.samePublisher && Boolean(sharedNetwork(host, c));
     c.quietMonths = c.feed?.ok && c.feed.daysSinceLast != null && c.feed.daysSinceLast > RULES.pausedDays ? Math.floor(c.feed.daysSinceLast / 30) : 0;

@@ -7,12 +7,15 @@ export function inviteFacts(host, c) {
   const recent = (c.feed?.recent || []).slice(0, 3).map(e => e.title).filter(Boolean);
   return {
     hostShow: host.name,
+    hostEpisodes: host.episodes || null,
+    hostCadence: host.cadence || '',
+    hostSince: host.since || null,
     theirShow: c.showName || c.name,
     theirHost: c.feed?.ownerName || '',
     recentEpisodes: recent,
     swappedWith: (c.others || []).slice(0, 3).map(s => s.show),
     swapEpisodes: (c.others || []).slice(0, 3).map(s => s.episode),
-    sharedTags: c.sharedTags || [],
+    commonGround: c.sharedTags || [],
     openQuote: c.openQuote || '',
   };
 }
@@ -23,15 +26,16 @@ function allowedNames(f) {
 
 export function templateInvite(f) {
   const hi = f.theirHost ? `Hi ${f.theirHost.split(/[,&]| and /)[0].trim()},` : 'Hi there,';
-  const ep = f.recentEpisodes[0] ? ` I came across your episode "${f.recentEpisodes[0]}".` : '';
-  const habit = f.swappedWith.length ? ` I saw you've done a swap with ${f.swappedWith[0]} before, so I hope this is a welcome note.` : '';
+  const about = [f.hostEpisodes ? `${f.hostEpisodes} episodes` : '', f.hostCadence, f.hostSince ? `since ${f.hostSince}` : ''].filter(Boolean).join(', ');
+  const ground = f.commonGround.length ? ` Our shows cover similar ground (${f.commonGround.map(t => t.toLowerCase()).join(', ')}).` : '';
+  const ep = f.recentEpisodes[0] ? ` I saw your recent episode "${f.recentEpisodes[0]}".` : '';
   return {
-    subject: `Promo swap? ${f.hostShow} x ${f.theirShow}`,
+    subject: `Trailer swap? ${f.hostShow} x ${f.theirShow}`,
     body: [
       hi, '',
-      `I host ${f.hostShow}.${ep} Our audiences look like they overlap, so I wanted to ask if you'd be up for a promo swap: we each play a short trailer for the other show.${habit}`,
+      `I host ${f.hostShow}${about ? ` (${about})` : ''}.${ground}${ep}`,
       '',
-      'If that sounds good, I can send our trailer and a short script. Happy to work around your schedule.',
+      'Would you be up for a trailer swap? We each play a 30-second trailer for the other show near the top of an upcoming episode. I can send ours and a short read script this week.',
       '', 'Thanks,', '[Your name]',
     ].join('\n'),
     source: 'template',
@@ -49,6 +53,7 @@ export function checkDraft(text, f) {
     if (!allowed.some(a => appearsVerbatim(m[1], a) && appearsVerbatim(a, m[1])) && !appearsVerbatim(m[1], f.openQuote)) return `quoted "${m[1]}" is not in the facts`;
   }
   if (/\b\d[\d,.]*\s*(k\b|listeners|downloads|subscribers)/i.test(plain)) return 'mentions audience numbers';
+  if (/\btags?\b|\bqloo\b/i.test(plain)) return 'mentions tags or Qloo';
   return null;
 }
 
@@ -58,9 +63,11 @@ export async function draftInvite(host, c, { note = '' } = {}) {
   const f = inviteFacts(host, c);
   if (!llmAvailable()) return { ...templateInvite(f), facts: f };
   const prompt = [
-    'Write a short, friendly email from one independent podcast host to another, proposing a promo swap',
-    '(each show plays a short trailer for the other). Under 120 words. Plain words, no hype, no em dashes.',
+    'Write a short, friendly email from one independent podcast host to another, proposing a trailer swap:',
+    'each show plays a 30-second trailer for the other near the top of an upcoming episode. Under 120 words. Plain words, no hype, no em dashes.',
     'Use ONLY the facts below. Do not invent episodes, numbers, guests, or praise. Do not claim the sender has listened to anything.',
+    'Say in one line what the shows have in common using commonGround in plain words; never use the word "tag" or "Qloo".',
+    'Mention the sender show’s episode count, cadence and start year if given. Subject must name both shows.',
     'Wrap every podcast name and every episode title you mention in double square brackets, like [[Name]].',
     'Sign off with "[Your name]".',
     `Facts (JSON): ${JSON.stringify(f)}`,

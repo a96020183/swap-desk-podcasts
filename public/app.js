@@ -99,6 +99,7 @@ function show(result, key) {
 /* fallback: Qloo doesn't have the show */
 function renderFallback(r) {
   state.picks = [];
+  $('#footline').innerHTML = 'Qloo knows about 55% of the indie shows in our test that trade promos. When it doesn’t know yours, results come from the shows you pick. <a href="/evidence">Evidence &rarr;</a>';
   const sugg = r.suggestions || [];
   $('#result').innerHTML = `<div class="fallback">
     <h3>Qloo doesn't have this show yet.</h3>
@@ -158,11 +159,11 @@ function receiptHtml(row) {
       <dt>Rank</dt><dd>${q.seed ? 'Your pick' : '#' + esc(q.rank) + ' of 50'}</dd>
       <dt>Affinity</dt><dd>${num(q.affinity)}</dd>
       <dt>Popularity</dt><dd>${num(q.popularity)}${q.hostPopularity != null ? ` (yours ${num(q.hostPopularity)})` : ''}</dd>
-      <dt>Similar reach list</dt><dd>${q.similarParams ? (q.inSimilarReachList ? 'Yes' : 'No') : 'Not asked'}</dd>
+      <dt>Size-capped list</dt><dd>${q.similarParams ? (q.inSimilarReachList ? 'In it' : 'Not in it') : 'Not asked'}</dd>
       <dt>Tags</dt><dd>${esc(q.tags.join(', ') || 'none')}</dd>
       ${q.compareTags ? `<dt>In common</dt><dd>${esc(q.compareTags.join(', '))} <span style="color:var(--ink-3)">(compare with ${esc(q.compareWith)})</span></dd>` : ''}
-      ${q.explainedBy && q.explainedBy.length ? `<dt>Explained by</dt><dd>${esc(q.explainedBy[0])}</dd>` : ''}
-      <dt>Query</dt><dd class="params">${Object.entries(q.params || {}).map(([k, v]) => esc(k + '=' + v)).join('<br>')}${q.similarParams ? '<br>2nd call adds filter.popularity.max=' + esc(q.similarParams['filter.popularity.max']) : ''}</dd>
+      ${q.explainScores ? `<dt>Explainability</dt><dd class="params">${q.explainScores.map(x => esc(x.id) + ': ' + (x.score == null ? 'n/a' : Number(x.score).toFixed(3))).join('<br>')}</dd>` : ''}
+      <dt>Query</dt><dd class="params">${Object.entries(q.params || {}).map(([k, v]) => esc(k + '=' + v)).join('<br>')}${q.similarParams ? '<br>2nd call adds filter.popularity.max=' + esc(q.similarParams['filter.popularity.max']) : ''}<br>GET /v2/insights</dd>
     </dl></section>
     <section><h4>Their feed says</h4>${feed}</section>
     <section><h4>Our call</h4><dl>
@@ -183,7 +184,7 @@ function firstFiveRow(row) {
     </div>
     <div class="acts">
       <button class="small" type="button" data-draft="${esc(row.key)}">Draft invite</button>
-      <span class="contact">${row.contact ? 'Contact in feed' : 'No public contact'}</span>
+      <span class="contact">${row.contact ? 'Email in feed' : row.website ? `<a href="${esc(row.website)}" target="_blank" rel="noopener">Website</a>` : 'No public contact'}</span>
       <button class="link" type="button" data-receipt="${esc(row.key)}">Receipt</button>
     </div>
   </div>`;
@@ -203,25 +204,31 @@ function restRow(row) {
 
 function renderResult() {
   const r = state.result;
-  const five = r.shortlist.slice(0, 5), rest = r.shortlist.slice(5);
+  const reachable = row => !row.chips.some(c => c.k === 'quiet' || c.text === 'Feed not matched') && (row.contact || row.website);
+  const shown = state.onlyReachable ? r.shortlist.filter(reachable) : r.shortlist;
+  const five = shown.filter(x => x.position <= 5), rest = shown.filter(x => x.position > 5);
+  $('#footline').innerHTML = r.seeds?.length
+    ? 'Qloo doesn’t know this show, so the list starts from your picks. In our test this path rarely found real partners. Treat it as a starting list. <a href="/evidence">Evidence &rarr;</a>'
+    : 'In our test of 48 shows, Qloo’s top 20 held 24.3% of the partners hosts really chose. <a href="/evidence">Evidence &rarr;</a>';
   const desk = `
     ${r.seeds?.length ? `<p class="based">Based on your picks: ${esc(r.seeds.join(', '))}. Qloo has not seen your show.</p>` : ''}
+    <label class="only"><input type="checkbox" id="only" ${state.onlyReachable ? 'checked' : ''}> Hide quiet shows and shows with no contact <span>(hides rows, never reorders)</span></label>
     <div class="five"><div class="five-head"><h3>Your first five</h3><span>${r.seeds?.length ? 'Your picks first, then Qloo’s matches in Qloo’s order' : 'Top 20 of Qloo’s matches, in Qloo’s order'}</span></div>
-      ${five.map(firstFiveRow).join('') || '<p>No matches to show.</p>'}</div>
+      ${five.map(firstFiveRow).join('') || '<p class="based">None of Qloo’s top five pass the filter.</p>'}</div>
     ${rest.length ? `<div class="rest"><h3>Next on the list</h3>${rest.map(restRow).join('')}</div>` : ''}
     <div class="sides">
-      <div class="side"><h3>Big name, different crowd</h3><p class="hint">Top of your genre, but not in Qloo's 50 closest to you.</p>
+      <div class="side"><h3>Big name, different crowd</h3><p class="hint">Famous in your genre but not among Qloo's 50 closest to you. Shown so you can see why they're not on your list.</p>
         <ul>${r.bigNames.map(b => `<li>${esc(b.name)}</li>`).join('') || '<li>None</li>'}</ul></div>
       <div class="side"><h3>Reading the labels</h3><p class="hint">Labels never change the order. They help you decide.</p>
         <ul>
-          <li>Similar reach<span>in Qloo's list capped near your popularity</span></li>
-          <li>Much bigger reach<span>Qloo popularity well above yours</span></li>
+          <li>Similar reach<span>Qloo popularity within 0.05 of yours</span></li>
+          <li>Much bigger reach<span>0.05 or more above yours</span></li>
           <li>Quiet for 4+ months<span>no new episode in their feed</span></li>
           <li>Swapped with N shows<span>promo episodes in their feed</span></li>
         </ul></div>
     </div>
     <p class="usage">${r.usage.qloo + r.usage.feeds ? `This run: ${r.usage.qloo} Qloo calls, ${r.usage.feeds} feeds read, ${r.usage.llmCalls} LLM calls, ${r.seconds} s.` : 'This run reused data fetched in the last 24 hours.'} Run at ${esc(new Date(r.ranAt).toUTCString().slice(5, 22))} UTC${state.mode === 'recorded' ? ' (recorded mode; switch to Live to refetch)' : ''}.</p>`;
-  const llm = `<p class="llm-note">What gpt-4.1-mini suggests with no web search and no Qloo, from the same show name, publisher, genre and description. Titles as the model wrote them; we did not check that they exist.</p>
+  const llm = `<p class="llm-note">What gpt-4.1-mini suggests with no web search and no Qloo, from the same show name, publisher, genre and description. Titles as the model wrote them; we did not check that they exist. In our test a top LLM with web search came close to Qloo; the gap was too small to call (<a href="/evidence">evidence</a>).</p>
     <ol class="llm-list">${r.llmOnly.map(x => `<li>${esc(x.name)}</li>`).join('')}</ol>`;
   $('#result').innerHTML = `
     <div class="tabs" role="tablist">
@@ -229,6 +236,7 @@ function renderResult() {
       <button role="tab" type="button" data-tab="llm" aria-selected="${state.tab === 'llm'}">LLM only <span class="t-sub">gpt-4.1-mini, no web search</span></button>
     </div>
     <div id="pane">${state.tab === 'desk' ? desk : llm}</div>`;
+  $('#only')?.addEventListener('change', e => { state.onlyReachable = e.target.checked; renderResult(); });
   $('#result').querySelectorAll('[data-tab]').forEach(b => b.addEventListener('click', () => { state.tab = b.dataset.tab; renderResult(); }));
   $('#result').querySelectorAll('[data-receipt]').forEach(b => b.addEventListener('click', () => toggleReceipt(b)));
   $('#result').querySelectorAll('[data-draft]').forEach(b => b.addEventListener('click', () => openDraft(b.dataset.draft)));
@@ -255,7 +263,9 @@ async function openDraft(key) {
   $('#draft-title').textContent = `Invite to ${row.name}`;
   $('#draft-ok').checked = false; $('#draft-prepare').disabled = true; $('#draft-ready').hidden = true;
   $('#draft-left').textContent = left > 0 ? `${left} of ${DRAFT_LIMIT} drafts left this session` : '';
-  $('#draft-to').textContent = row.contact ? `To: ${row.contact} (from their feed)` : 'No public contact in their feed. Copy the text and reach them where they list a contact.';
+  $('#draft-to').innerHTML = row.contact ? `To: ${esc(row.contact)} (from their feed)`
+    : row.website ? `No email in their feed. Their website: <a href="${esc(row.website)}" target="_blank" rel="noopener">${esc(row.website.replace(/^https?:\/\//, '').slice(0, 60))}</a>. Copy the text and use the contact there.`
+    : 'No email or website in their feed. Copy the text and reach them where they list a contact.';
   if (left <= 0) {
     $('#draft-subject').value = ''; $('#draft-body').value = '';
     $('#draft-note').textContent = `You've made ${DRAFT_LIMIT} drafts this session. Send those first.`;

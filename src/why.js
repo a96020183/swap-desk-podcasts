@@ -53,6 +53,9 @@ export function chips(host, c) {
   if (c.reach === 'similar') out.push({ k: 'reach', text: 'Similar reach' });
   else if (c.reach === 'bigger') out.push({ k: 'reach', text: 'Bigger reach' });
   else if (c.reach === 'much') out.push({ k: 'much', text: 'Much bigger reach' });
+  else if (c.reach === 'smaller') out.push({ k: 'reach', text: 'Smaller reach' });
+  else if (c.popularity != null && host.popularity == null) out.push({ k: 'reach', text: `Qloo popularity ${c.popularity.toFixed(2)}` });
+  if (c.feedMismatch) out.push({ k: 'same', text: 'Feed not matched' });
   if (c.quietMonths) out.push({ k: 'quiet', text: c.quietMonths >= 24 ? `Quiet for ${Math.floor(c.quietMonths / 12)}+ years` : `Quiet for ${c.quietMonths}+ months` });
   if (c.samePublisher) out.push({ k: 'same', text: 'Same publisher' });
   if (c.sameNetwork) out.push({ k: 'same', text: 'Same network' });
@@ -68,7 +71,7 @@ export function chips(host, c) {
   if (n) out.push({ k: 'swaps', text: `Swapped with ${n} show${n === 1 ? '' : 's'}` });
   if (c.swappedWithYou) out.push({ k: 'you', text: `Swapped with you in ${new Date(c.swappedWithYou).toLocaleString('en-US', { month: 'short', year: 'numeric', timeZone: 'UTC' })}` });
   if (c.openQuote && SHOW_OPEN_TAG) out.push({ k: 'open', text: 'Says open to swaps' });
-  out.push(f?.ownerEmail ? { k: 'contact', text: 'Contact in feed' } : { k: 'nocontact', text: 'No public contact' });
+  out.push(f?.ownerEmail ? { k: 'contact', text: 'Email in feed' } : f?.link ? { k: 'contact', text: 'Website in feed' } : { k: 'nocontact', text: 'No public contact' });
   return out;
 }
 
