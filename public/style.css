@@ -113,6 +113,8 @@ button.small { min-height: 34px; padding: 0 13px; font-size: 14px; border-radius
 .tabs button[aria-selected="true"] { color: var(--ink); border-bottom-color: var(--ink); }
 .tabs .t-sub { font-weight: 400; color: var(--ink-3); font-size: 13px; }
 
+.pastnote { margin: 22px 0 0; padding: 12px 16px; border-radius: 12px; background: #e9f1ec; color: var(--ink-2); font-size: 15px; }
+.pastnote b { color: var(--ink); font-weight: 500; }
 .only { display: flex; align-items: center; gap: 8px; margin: 22px 0 0; font-size: 14px; color: var(--ink-2); cursor: pointer; }
 .only input { width: 16px; height: 16px; accent-color: var(--ink); }
 .only span { color: var(--ink-3); }

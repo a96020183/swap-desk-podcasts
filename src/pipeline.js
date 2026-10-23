@@ -121,12 +121,12 @@ export async function runShortlist({ itunesId, seeds = null, fresh = false, step
     c.openQuote = await openToSwaps(c.showName, c.feed.description);
   });
 
-  step('rank', 'Putting your first five on top');
+  step('rank', 'Checking what each show has in common with yours');
   const ranked = rankCandidates(host, cands, { today, bigNames: bigNamesRaw });
-  // What two shows have in common, per Qloo's compare endpoint: first five only (one call each, cached a day).
+  // What two shows have in common, per Qloo's compare endpoint: every row of the top 20 (one call each, cached a day).
   const anchorId = hostEntity?.qid || seedEntities[0]?.qid;
   if (anchorId) {
-    await pool(ranked.shortlist.slice(0, RULES.firstFive).filter(c => c.qid && c.qid !== anchorId), 5, async c => {
+    await pool(ranked.shortlist.filter(c => c.qid && c.qid !== anchorId), 5, async c => {
       c.compareTags = await qloo.sharedTagsCompare(anchorId, c.qid, { fresh });
     });
   }
@@ -165,7 +165,7 @@ function rowView(host, c, ctx) {
     artist: c.artist, artwork: c.artwork, seed: Boolean(c.seed),
     chips: chips(host, c),
     why: whyParts(host, c, { seeds: ctx.seeds }),
-    tagLine: c.sharedTags.length ? `Qloo tags you share: ${c.sharedTags.join(', ')}` : 'Qloo gave a score, not a reason',
+    tagLine: c.compareTags?.length ? `Qloo finds in common: ${c.compareTags.join(', ')}` : c.sharedTags.length ? `Qloo tags you share: ${c.sharedTags.join(', ')}` : 'Qloo gave a score, not a reason',
     contact: f.ownerEmail || null,
     website: /^https?:\/\//i.test(f.link || '') ? f.link : null,
     receipt: {

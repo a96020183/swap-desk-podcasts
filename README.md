@@ -13,14 +13,14 @@ Indie hosts grow by trading promos with shows like theirs, and the hard part is 
    public contact, and its recent promo episodes. gpt-4.1-mini names the show each promo episode was for; a name is kept
    only if it appears word for word in that episode's text.
 4. The shortlist is **Qloo's top 20, in Qloo's order**, the same list the evidence page scores. The top 5 are
-   **Your first five**. Nothing is moved or dropped. Size labels compare Qloo popularity with yours
+   **Qloo's top five**. Nothing is moved or dropped. Size labels compare Qloo popularity with yours
    (Similar from 0.05 below to 0.02 above yours, Smaller or Bigger beyond that, **Much bigger reach** at +0.05 or more; on the fallback, against the median of your picks); feeds with no episode in 120 days get
    **Quiet for N+ months**; shows from your own publisher or network, or that already swapped with you (found in either feed, any year),
    are labelled too. The first row that is active and has a contact is marked **Start here** (skipping shows you already swapped with). A checkbox hides quiet
    shows and shows with no contact; it never reorders. Rows 6 to 20 show the Qloo tags both shows carry, or say that Qloo
    gave a score and no reason.
 5. Every row has a **Why** line built by code from fixed sentences. The material comes only from Qloo
-   (shared tags from `/v2/analysis/compare`, or tags on both entities) or from facts in the feeds. The LLM never writes it.
+   (shared tags from `/v2/analysis/compare` for every row of the top 20, or tags on both entities) or from facts in the feeds. The LLM never writes it.
 6. **Receipt** opens three panels: *Qloo says* (entity, rank, affinity, popularity, shared tags, query), *Their feed says*
    (episodes, swaps with the episode each came from), *Our call* (the labels we added and why).
 7. **Draft invite** writes a short trailer-swap email from the row's facts (what the shows have in common per Qloo's
@@ -97,7 +97,7 @@ restart, and the first request after sleeping takes longer.
   Swap Desk does not open podcasts.apple.com pages.
 - **Each show's public RSS feed**, fetched at most once a day per feed; only parsed facts are cached. Email and website
   shown on a row are the ones the show itself publishes in its feed.
-- **Qloo** `/search`, `/v2/insights` (once per show, plus one genre list), `/v2/analysis/compare` for the first five.
+- **Qloo** `/search`, `/v2/insights` (once per show, plus one genre list), `/v2/analysis/compare` for each of the top 20 (about 25 calls per new show, cached for a day).
   Responses stay in a git-ignored server cache.
 - **OpenAI** gets show names, episode titles and episode descriptions. It never gets email addresses.
 

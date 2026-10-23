@@ -166,7 +166,7 @@ function receiptHtml(row) {
     <details class="raw"><summary>Raw request</summary><p class="params">GET /v2/insights<br>${Object.entries(q.params || {}).map(([k, v]) => esc(k + '=' + v)).join('<br>')}<br>entity: ${esc(q.entityId)}</p></details></section>
     <section><h4>Their feed says</h4>${feed}</section>
     <section><h4>Our call</h4><dl>
-      <dt>Position</dt><dd>${c.position ? '#' + c.position + (c.column === 'firstFive' ? ', first five' : '') : 'Below the top 20'}, in Qloo's order</dd>
+      <dt>Position</dt><dd>${c.position ? '#' + c.position + (c.column === 'firstFive' ? ', Qloo’s top five' : '') : 'Below the top 20'}, in Qloo's order</dd>
     </dl>${c.reasons.length ? `<p style="margin:8px 0 0">Labels we added:</p><ul>${c.reasons.map(r => `<li>${esc(r)}</li>`).join('')}</ul>` : '<p style="margin:8px 0 0">No labels added.</p>'}
     <p class="ours">This part is Swap Desk's reading, not Qloo's.</p></section>
   </div>`;
@@ -209,6 +209,15 @@ function restRow(row) {
   </div>`;
 }
 
+// Shows Qloo ranked that you already swapped with, as found in the feeds. Rank and month only, nothing more.
+function pastNote(r) {
+  if (r.seeds?.length) return '';
+  const past = r.shortlist.filter(swappedBefore).map(x => ({ name: x.name, pos: x.position, when: (x.chips.find(c => c.k === 'you')?.text || '').replace('Swapped with you in ', '') }));
+  if (!past.length) return '';
+  const list = past.map(p => `<b>${esc(p.name)}</b> #${p.pos} (you swapped in ${esc(p.when)})`).join(past.length === 2 ? ' and ' : ', ');
+  return `<p class="pastnote">Already your partners: Qloo ranks ${list}. Found in the feeds, so Start here skips ${past.length === 1 ? 'it' : 'them'}.</p>`;
+}
+
 function renderResult() {
   const r = state.result;
   state.startKey = (r.shortlist.find(x => reachable(x) && !swappedBefore(x)) || {}).key || null;
@@ -220,8 +229,9 @@ function renderResult() {
     : 'In our test of 48 shows, Qloo’s top 20 held 24.3% of the partners hosts really chose. <a href="/evidence">Evidence &rarr;</a>';
   const desk = `
     ${r.seeds?.length ? `<p class="based">Based on your picks: ${esc(r.seeds.join(', '))}. Qloo has not seen your show.</p>` : ''}
+    ${pastNote(r)}
     <label class="only"><input type="checkbox" id="only" ${state.onlyReachable ? 'checked' : ''}> Hide quiet shows and shows with no contact <span>(hides rows, never reorders)</span></label>
-    <div class="five"><div class="five-head"><h3>${r.seeds?.length ? 'Starting points from your picks' : 'Your first five'}</h3><span>${r.seeds?.length ? 'Not validated: in our test this path rarely found real partners' : 'Top 20 of Qloo’s matches, in Qloo’s order'} &middot; ready to contact now: ${readyFive} of ${Math.min(5, r.shortlist.length)}</span></div>
+    <div class="five"><div class="five-head"><h3>${r.seeds?.length ? 'Starting points from your picks' : 'Qloo’s top five'}</h3><span>${r.seeds?.length ? 'Not validated: in our test this path rarely found real partners' : 'Top 20 of Qloo’s matches, in Qloo’s order'} &middot; ready to contact now: ${readyFive} of ${Math.min(5, r.shortlist.length)}</span></div>
       ${five.map(firstFiveRow).join('') || '<p class="based">None of Qloo’s top five pass the filter.</p>'}</div>
     ${rest.length ? `<div class="rest"><h3>Next on the list</h3>${rest.map(restRow).join('')}</div>` : ''}
     <div class="sides">

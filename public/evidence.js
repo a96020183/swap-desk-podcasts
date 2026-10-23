@@ -46,7 +46,7 @@ function day1(d) {
   if (X) {
     const ok = X['E1 consistency'].filter(r => r.overlap_top20 >= 18).length;
     blocks.push(`<div class="test"><h3>Smaller checks</h3>
-      <p>Re-asking Qloo for ${X['E1 consistency'].length} test shows returned the same top 20 in ${ok} of ${X['E1 consistency'].length} cases. Qloo's compare call returns the tags two podcasts share, so the first five use it for their Why line. Qloo's explainability field scores each input show, so when you search from picks, a row can say which pick it is closest to.</p>
+      <p>Re-asking Qloo for ${X['E1 consistency'].length} test shows returned the same top 20 in ${ok} of ${X['E1 consistency'].length} cases. Qloo's compare call returns the tags two podcasts share, so each of the top 20 uses it for its Why line. Qloo's explainability field scores each input show, so when you search from picks, a row can say which pick it is closest to.</p>
       <p>Found after the test: about 3% of Qloo's iTunes links point at a differently named show. Test A joined feeds by that link as written. Swap Desk now checks the names before reading a feed.</p></div>`);
   }
   return blocks.join('');
