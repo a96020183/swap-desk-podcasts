@@ -213,7 +213,7 @@ function renderResult() {
   const desk = `
     ${r.seeds?.length ? `<p class="based">Based on your picks: ${esc(r.seeds.join(', '))}. Qloo has not seen your show.</p>` : ''}
     <label class="only"><input type="checkbox" id="only" ${state.onlyReachable ? 'checked' : ''}> Hide quiet shows and shows with no contact <span>(hides rows, never reorders)</span></label>
-    <div class="five"><div class="five-head"><h3>Your first five</h3><span>${r.seeds?.length ? 'Your picks first, then Qloo’s matches in Qloo’s order' : 'Top 20 of Qloo’s matches, in Qloo’s order'}</span></div>
+    <div class="five"><div class="five-head"><h3>Your first five</h3><span>${r.seeds?.length ? 'Qloo’s matches for your picks, in Qloo’s order' : 'Top 20 of Qloo’s matches, in Qloo’s order'}</span></div>
       ${five.map(firstFiveRow).join('') || '<p class="based">None of Qloo’s top five pass the filter.</p>'}</div>
     ${rest.length ? `<div class="rest"><h3>Next on the list</h3>${rest.map(restRow).join('')}</div>` : ''}
     <div class="sides">
