@@ -16,6 +16,18 @@ def keys_tree(o, depth=0, maxd=4):
     return type(o).__name__
 
 
+def paths(o, pre=''):
+    # dotted field names only (no values), so the public results file holds no Qloo data
+    out = []
+    if isinstance(o, dict):
+        for k, v in o.items(): out += paths(v, (pre + '.' if pre else '') + k)
+    elif isinstance(o, list):
+        out += paths(o[0], pre + '[]') if o else [pre + '[]']
+    else:
+        out.append(pre)
+    return out
+
+
 def ents(d):
     return ((d.get('body') or {}).get('results') or {}).get('entities', []) if isinstance((d.get('body') or {}).get('results'), dict) else []
 
@@ -41,7 +53,7 @@ for cid, a, hit in pairs:
     body = d.get('body') or {}
     txt = json.dumps(body)
     res['E2 compare'].append({'anchor': a['anchor'], 'partner': hit['name'], 'status': d['status'],
-                              'response_shape': keys_tree(body, maxd=3), 'mentions_tag': '"tag' in txt or 'urn:tag' in txt})
+                              'response_fields': paths(keys_tree(body, maxd=3)), 'mentions_tag': '"tag' in txt or 'urn:tag' in txt})
 
 for j, cid in enumerate(e1):
     a = anchors[cid]
@@ -53,7 +65,7 @@ for j, cid in enumerate(e1):
                                                'feature.explainability': 'true'})
     e = ents(d)
     res['E3 explainability'].append({'kind': kind, 'status': d['status'], 'n': len(e),
-                                     'entity_query_shape': keys_tree(e[0].get('query', {}), maxd=4) if e else None,
+                                     'entity_query_fields': paths(keys_tree(e[0].get('query', {}), maxd=4)) if e else None,
                                      'top_level_keys': list((d.get('body') or {}).keys())})
 res['usage_after'] = usage()
 json.dump(res, open(os.path.join(REPO, 'research', 'day1', 'results_extras.json'), 'w', encoding='utf8'), indent=1)

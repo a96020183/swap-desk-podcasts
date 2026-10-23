@@ -31,106 +31,66 @@
    "anchor": "The Midnight Library",
    "partner": "Loremen Podcast",
    "status": 200,
-   "response_shape": {
-    "duration": "int",
-    "results": {
-     "tags": [
-      "..."
-     ],
-     "a": [
-      "..."
-     ],
-     "b": [
-      "..."
-     ],
-     "matchEntities": []
-    }
-   },
-   "mentions_tag": true
+   "mentions_tag": true,
+   "response_fields": [
+    "duration",
+    "results.tags[]",
+    "results.a[]",
+    "results.b[]",
+    "results.matchEntities[]"
+   ]
   },
   {
    "anchor": "The SportsGrid Fantasy Football Show",
    "partner": "The Taekcast",
    "status": 200,
-   "response_shape": {
-    "duration": "int",
-    "results": {
-     "tags": [
-      "..."
-     ],
-     "a": [
-      "..."
-     ],
-     "b": [
-      "..."
-     ],
-     "matchEntities": []
-    }
-   },
-   "mentions_tag": true
+   "mentions_tag": true,
+   "response_fields": [
+    "duration",
+    "results.tags[]",
+    "results.a[]",
+    "results.b[]",
+    "results.matchEntities[]"
+   ]
   },
   {
    "anchor": "The Confessionals",
    "partner": "Sasquatch Chronicles",
    "status": 200,
-   "response_shape": {
-    "duration": "int",
-    "results": {
-     "tags": [
-      "..."
-     ],
-     "a": [
-      "..."
-     ],
-     "b": [
-      "..."
-     ],
-     "matchEntities": []
-    }
-   },
-   "mentions_tag": true
+   "mentions_tag": true,
+   "response_fields": [
+    "duration",
+    "results.tags[]",
+    "results.a[]",
+    "results.b[]",
+    "results.matchEntities[]"
+   ]
   },
   {
    "anchor": "We Got This with Mark and Hal",
    "partner": "Dead Pilots Society",
    "status": 200,
-   "response_shape": {
-    "duration": "int",
-    "results": {
-     "tags": [
-      "..."
-     ],
-     "a": [
-      "..."
-     ],
-     "b": [
-      "..."
-     ],
-     "matchEntities": []
-    }
-   },
-   "mentions_tag": true
+   "mentions_tag": true,
+   "response_fields": [
+    "duration",
+    "results.tags[]",
+    "results.a[]",
+    "results.b[]",
+    "results.matchEntities[]"
+   ]
   },
   {
    "anchor": "Your Last Meal with Rachel Belle",
    "partner": "Food with Mark Bittman",
    "status": 200,
-   "response_shape": {
-    "duration": "int",
-    "results": {
-     "tags": [
-      "..."
-     ],
-     "a": [
-      "..."
-     ],
-     "b": [
-      "..."
-     ],
-     "matchEntities": []
-    }
-   },
-   "mentions_tag": true
+   "mentions_tag": true,
+   "response_fields": [
+    "duration",
+    "results.tags[]",
+    "results.a[]",
+    "results.b[]",
+    "results.matchEntities[]"
+   ]
   }
  ],
  "E3 explainability": [
@@ -138,120 +98,80 @@
    "kind": "single show",
    "status": 200,
    "n": 10,
-   "entity_query_shape": {
-    "affinity": "float",
-    "measurements": {
-     "audience_growth": "int"
-    },
-    "explainability": {
-     "signal.interests.entities": [
-      {
-       "entity_id": "...",
-       "score": "..."
-      }
-     ]
-    }
-   },
    "top_level_keys": [
     "success",
     "results",
     "query"
+   ],
+   "entity_query_fields": [
+    "affinity",
+    "measurements.audience_growth",
+    "explainability.signal.interests.entities[].entity_id",
+    "explainability.signal.interests.entities[].score"
    ]
   },
   {
    "kind": "single show",
    "status": 200,
    "n": 10,
-   "entity_query_shape": {
-    "affinity": "float",
-    "measurements": {
-     "audience_growth": "int"
-    },
-    "explainability": {
-     "signal.interests.entities": [
-      {
-       "entity_id": "...",
-       "score": "..."
-      }
-     ]
-    }
-   },
    "top_level_keys": [
     "success",
     "results",
     "query"
+   ],
+   "entity_query_fields": [
+    "affinity",
+    "measurements.audience_growth",
+    "explainability.signal.interests.entities[].entity_id",
+    "explainability.signal.interests.entities[].score"
    ]
   },
   {
    "kind": "single show",
    "status": 200,
    "n": 10,
-   "entity_query_shape": {
-    "affinity": "float",
-    "measurements": {
-     "audience_growth": "int"
-    },
-    "explainability": {
-     "signal.interests.entities": [
-      {
-       "entity_id": "...",
-       "score": "..."
-      }
-     ]
-    }
-   },
    "top_level_keys": [
     "success",
     "results",
     "query"
+   ],
+   "entity_query_fields": [
+    "affinity",
+    "measurements.audience_growth",
+    "explainability.signal.interests.entities[].entity_id",
+    "explainability.signal.interests.entities[].score"
    ]
   },
   {
    "kind": "three seeds",
    "status": 200,
    "n": 10,
-   "entity_query_shape": {
-    "affinity": "float",
-    "measurements": {
-     "audience_growth": "int"
-    },
-    "explainability": {
-     "signal.interests.entities": [
-      {
-       "entity_id": "...",
-       "score": "..."
-      }
-     ]
-    }
-   },
    "top_level_keys": [
     "success",
     "results",
     "query"
+   ],
+   "entity_query_fields": [
+    "affinity",
+    "measurements.audience_growth",
+    "explainability.signal.interests.entities[].entity_id",
+    "explainability.signal.interests.entities[].score"
    ]
   },
   {
    "kind": "three seeds",
    "status": 200,
    "n": 10,
-   "entity_query_shape": {
-    "affinity": "float",
-    "measurements": {
-     "audience_growth": "int"
-    },
-    "explainability": {
-     "signal.interests.entities": [
-      {
-       "entity_id": "...",
-       "score": "..."
-      }
-     ]
-    }
-   },
    "top_level_keys": [
     "success",
     "results",
     "query"
+   ],
+   "entity_query_fields": [
+    "affinity",
+    "measurements.audience_growth",
+    "explainability.signal.interests.entities[].entity_id",
+    "explainability.signal.interests.entities[].score"
    ]
   }
  ],
