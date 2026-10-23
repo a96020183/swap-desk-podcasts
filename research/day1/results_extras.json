@@ -1,0 +1,266 @@
+{
+ "E1 consistency": [
+  {
+   "anchor": "There Are No Girls on the Internet",
+   "status": 200,
+   "overlap_top20": 20
+  },
+  {
+   "anchor": "The Midnight Library",
+   "status": 200,
+   "overlap_top20": 20
+  },
+  {
+   "anchor": "The SportsGrid Fantasy Football Show",
+   "status": 200,
+   "overlap_top20": 20
+  },
+  {
+   "anchor": "The Confessionals",
+   "status": 200,
+   "overlap_top20": 20
+  },
+  {
+   "anchor": "We Got This with Mark and Hal",
+   "status": 200,
+   "overlap_top20": 20
+  }
+ ],
+ "E2 compare": [
+  {
+   "anchor": "The Midnight Library",
+   "partner": "Loremen Podcast",
+   "status": 200,
+   "response_shape": {
+    "duration": "int",
+    "results": {
+     "tags": [
+      "..."
+     ],
+     "a": [
+      "..."
+     ],
+     "b": [
+      "..."
+     ],
+     "matchEntities": []
+    }
+   },
+   "mentions_tag": true
+  },
+  {
+   "anchor": "The SportsGrid Fantasy Football Show",
+   "partner": "The Taekcast",
+   "status": 200,
+   "response_shape": {
+    "duration": "int",
+    "results": {
+     "tags": [
+      "..."
+     ],
+     "a": [
+      "..."
+     ],
+     "b": [
+      "..."
+     ],
+     "matchEntities": []
+    }
+   },
+   "mentions_tag": true
+  },
+  {
+   "anchor": "The Confessionals",
+   "partner": "Sasquatch Chronicles",
+   "status": 200,
+   "response_shape": {
+    "duration": "int",
+    "results": {
+     "tags": [
+      "..."
+     ],
+     "a": [
+      "..."
+     ],
+     "b": [
+      "..."
+     ],
+     "matchEntities": []
+    }
+   },
+   "mentions_tag": true
+  },
+  {
+   "anchor": "We Got This with Mark and Hal",
+   "partner": "Dead Pilots Society",
+   "status": 200,
+   "response_shape": {
+    "duration": "int",
+    "results": {
+     "tags": [
+      "..."
+     ],
+     "a": [
+      "..."
+     ],
+     "b": [
+      "..."
+     ],
+     "matchEntities": []
+    }
+   },
+   "mentions_tag": true
+  },
+  {
+   "anchor": "Your Last Meal with Rachel Belle",
+   "partner": "Food with Mark Bittman",
+   "status": 200,
+   "response_shape": {
+    "duration": "int",
+    "results": {
+     "tags": [
+      "..."
+     ],
+     "a": [
+      "..."
+     ],
+     "b": [
+      "..."
+     ],
+     "matchEntities": []
+    }
+   },
+   "mentions_tag": true
+  }
+ ],
+ "E3 explainability": [
+  {
+   "kind": "single show",
+   "status": 200,
+   "n": 10,
+   "entity_query_shape": {
+    "affinity": "float",
+    "measurements": {
+     "audience_growth": "int"
+    },
+    "explainability": {
+     "signal.interests.entities": [
+      {
+       "entity_id": "...",
+       "score": "..."
+      }
+     ]
+    }
+   },
+   "top_level_keys": [
+    "success",
+    "results",
+    "query"
+   ]
+  },
+  {
+   "kind": "single show",
+   "status": 200,
+   "n": 10,
+   "entity_query_shape": {
+    "affinity": "float",
+    "measurements": {
+     "audience_growth": "int"
+    },
+    "explainability": {
+     "signal.interests.entities": [
+      {
+       "entity_id": "...",
+       "score": "..."
+      }
+     ]
+    }
+   },
+   "top_level_keys": [
+    "success",
+    "results",
+    "query"
+   ]
+  },
+  {
+   "kind": "single show",
+   "status": 200,
+   "n": 10,
+   "entity_query_shape": {
+    "affinity": "float",
+    "measurements": {
+     "audience_growth": "int"
+    },
+    "explainability": {
+     "signal.interests.entities": [
+      {
+       "entity_id": "...",
+       "score": "..."
+      }
+     ]
+    }
+   },
+   "top_level_keys": [
+    "success",
+    "results",
+    "query"
+   ]
+  },
+  {
+   "kind": "three seeds",
+   "status": 200,
+   "n": 10,
+   "entity_query_shape": {
+    "affinity": "float",
+    "measurements": {
+     "audience_growth": "int"
+    },
+    "explainability": {
+     "signal.interests.entities": [
+      {
+       "entity_id": "...",
+       "score": "..."
+      }
+     ]
+    }
+   },
+   "top_level_keys": [
+    "success",
+    "results",
+    "query"
+   ]
+  },
+  {
+   "kind": "three seeds",
+   "status": 200,
+   "n": 10,
+   "entity_query_shape": {
+    "affinity": "float",
+    "measurements": {
+     "audience_growth": "int"
+    },
+    "explainability": {
+     "signal.interests.entities": [
+      {
+       "entity_id": "...",
+       "score": "..."
+      }
+     ]
+    }
+   },
+   "top_level_keys": [
+    "success",
+    "results",
+    "query"
+   ]
+  }
+ ],
+ "E1 any below 18/20": false,
+ "usage_after": {
+  "usd": 0.081349,
+  "llm_calls": 412,
+  "qloo": 206,
+  "itunes": 12,
+  "rss": 1615
+ }
+}

@@ -1,0 +1,12 @@
+{
+ "E4": "open to swaps sample",
+ "n": 100,
+ "reviewer": "build agent (not an independent human)",
+ "reviewer_explicit": 0,
+ "llm_flagged": 0,
+ "both": 0,
+ "llm_only": 0,
+ "reviewer_only": 0,
+ "agreement": 1.0,
+ "tag on first screen": false
+}
