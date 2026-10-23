@@ -31,7 +31,7 @@ function day1(d) {
     const pass = a.PASS;
     blocks.push(`<div class="test"><h3>Test A: does reading feeds for swap habits move real partners up?<span class="verdict ${pass ? 'pass' : 'fail'}">${pass ? 'Passed' : 'Did not pass'}</span></h3>
       <p>Qloo's top 50 for each of the 48 shows, re-ordered when a candidate's recent episodes show swaps with other shows. Top 20: Qloo alone ${p1(a['Q@20'])}, with swap habits read by the LLM ${p1(a['QH_agent@20'])}, with a keyword rule ${p1(a['QH_rule@20'])}. Difference ${a['QH_agent - Q [CI]'][0]} points (${ci(a['QH_agent - Q [CI]'].slice(1))}); random re-ordering of the same number of shows reaches ${p1(a['placebo p95'])} at its 95th percentile.</p>
-      <p>${pass ? 'Swap habits could move rows, but the desk keeps Qloo's order so the shortlist matches the list scored above.' : 'So swap habits are shown on each row as information and never change the order. We claim no lift.'}</p></div>`);
+      <p>${pass ? 'Swap habits could move rows, but the desk keeps Qloo2019s order so the shortlist matches the list scored above.' : 'So swap habits are shown on each row as information and never change the order. We claim no lift.'}</p></div>`);
   } else blocks.push('<div class="test"><h3>Test A<span class="verdict wait">Running</span></h3></div>');
   if (B) {
     blocks.push(`<div class="test"><h3>Test B: when Qloo doesn't know a show, do seed shows help?<span class="verdict ${B.PASS ? 'pass' : 'fail'}">${B.PASS ? 'Passed' : 'Did not pass'}</span></h3>

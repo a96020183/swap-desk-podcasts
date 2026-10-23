@@ -249,6 +249,7 @@ dialog::backdrop { background: rgba(31, 29, 26, 0.35); }
   .tabs { gap: 18px; overflow-x: auto; }
   .tabs .t-sub { display: none; }
   .chip { white-space: normal; line-height: 1.3; }
+  .side li span { white-space: normal; text-align: right; }
   .host img { width: 52px; height: 52px; }
   .five-head { flex-direction: column; gap: 2px; }
   .mode button { padding: 3px 9px; }

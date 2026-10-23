@@ -8,3 +8,8 @@ node_modules/
 進度.md
 *.log
 __pycache__/
+
+# internal Chinese notes (not part of the public repo)
+評審_*.md
+直播準備.md
+Devpost交件文字.md

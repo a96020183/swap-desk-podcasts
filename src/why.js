@@ -53,7 +53,7 @@ export function chips(host, c) {
   if (c.reach === 'similar') out.push({ k: 'reach', text: 'Similar reach' });
   else if (c.reach === 'bigger') out.push({ k: 'reach', text: 'Bigger reach' });
   else if (c.reach === 'much') out.push({ k: 'much', text: 'Much bigger reach' });
-  if (c.quietMonths) out.push({ k: 'quiet', text: `Quiet for ${c.quietMonths}+ months` });
+  if (c.quietMonths) out.push({ k: 'quiet', text: c.quietMonths >= 24 ? `Quiet for ${Math.floor(c.quietMonths / 12)}+ years` : `Quiet for ${c.quietMonths}+ months` });
   if (c.samePublisher) out.push({ k: 'same', text: 'Same publisher' });
   if (c.sameNetwork) out.push({ k: 'same', text: 'Same network' });
   const f = c.feed;

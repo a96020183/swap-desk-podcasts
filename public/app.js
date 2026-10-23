@@ -206,7 +206,7 @@ function renderResult() {
   const five = r.shortlist.slice(0, 5), rest = r.shortlist.slice(5);
   const desk = `
     ${r.seeds?.length ? `<p class="based">Based on your picks: ${esc(r.seeds.join(', '))}. Qloo has not seen your show.</p>` : ''}
-    <div class="five"><div class="five-head"><h3>Your first five</h3><span>${r.seeds?.length ? 'Your picks first, then Qloo's matches in Qloo's order' : 'Top 20 of Qloo's matches, in Qloo's order'}</span></div>
+    <div class="five"><div class="five-head"><h3>Your first five</h3><span>${r.seeds?.length ? 'Your picks first, then Qloo’s matches in Qloo’s order' : 'Top 20 of Qloo’s matches, in Qloo’s order'}</span></div>
       ${five.map(firstFiveRow).join('') || '<p>No matches to show.</p>'}</div>
     ${rest.length ? `<div class="rest"><h3>Next on the list</h3>${rest.map(restRow).join('')}</div>` : ''}
     <div class="sides">
