@@ -1,0 +1,83 @@
+{
+ "test": "A",
+ "anchors": 48,
+ "pairs": 185,
+ "Q recall@50 ceiling": 31.8,
+ "counts": {
+  "cands": 2400,
+  "with_feed": 2231,
+  "promo_a": 407,
+  "agent_a": 318,
+  "rule_a": 403
+ },
+ "pool (a) last 40 episodes": {
+  "Q@20": 24.3,
+  "QH_rule@20": 25.3,
+  "QH_agent@20": 24.8,
+  "QH_agent - Q [CI]": [
+   0.4,
+   0.0,
+   1.3
+  ],
+  "QH_agent - QH_rule [CI] (report only)": [
+   -0.5,
+   -1.6,
+   0.0
+  ],
+  "k=5: Q / QH_rule / QH_agent": [
+   10.9,
+   11.4,
+   11.4
+  ],
+  "k=5: QH_agent - Q [CI]": [
+   0.5,
+   -1.6,
+   3.1
+  ],
+  "mid+cold (T2+T3) @20: Q / QH_rule / QH_agent": [
+   23.0,
+   23.8,
+   23.0
+  ],
+  "cond1 diff >= 2.0": false,
+  "cond2 CI low > 0": false,
+  "placebo p95": 24.8,
+  "placebo mean": 24.1,
+  "cond3 above placebo p95": false,
+  "PASS": false
+ },
+ "pool (b) before first swap": {
+  "Q@20": 24.3,
+  "QH_rule@20": 25.9,
+  "QH_agent@20": 25.9,
+  "QH_agent - Q [CI]": [
+   1.6,
+   0.0,
+   4.2
+  ],
+  "QH_agent - QH_rule [CI] (report only)": [
+   0.0,
+   0.0,
+   0.0
+  ],
+  "k=5: Q / QH_rule / QH_agent": [
+   10.9,
+   11.8,
+   11.8
+  ],
+  "k=5: QH_agent - Q [CI]": [
+   0.9,
+   -0.4,
+   3.1
+  ],
+  "mid+cold (T2+T3) @20: Q / QH_rule / QH_agent": [
+   23.0,
+   23.8,
+   23.8
+  ],
+  "cond1 diff >= 2.0": false,
+  "cond2 CI low > 0": false
+ },
+ "b opposite to a": false,
+ "product decision": "info only, no rerank"
+}
