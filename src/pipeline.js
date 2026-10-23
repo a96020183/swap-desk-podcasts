@@ -1,5 +1,5 @@
 // One run: your show -> Qloo podcast neighbours -> their feeds -> ranked shortlist with receipts.
-import { RULES, HABIT_RERANK } from './config.js';
+import { RULES } from './config.js';
 import { lookupShows, searchShows } from './itunes.js';
 import * as qloo from './qloo.js';
 import { readFeed, promoEpisodes } from './rss.js';
@@ -126,7 +126,7 @@ export async function runShortlist({ itunesId, seeds = null, fresh = false, step
   });
 
   step('rank', 'Putting your first five on top');
-  const ranked = rankCandidates(host, cands, { habitRerank: HABIT_RERANK, today, bigNames: bigNamesRaw });
+  const ranked = rankCandidates(host, cands, { today, bigNames: bigNamesRaw });
   // What two shows have in common, per Qloo's compare endpoint: first five only (one call each, cached a day).
   const anchorId = hostEntity?.qid || seedEntities[0]?.qid;
   if (anchorId) {
@@ -141,12 +141,9 @@ export async function runShortlist({ itunesId, seeds = null, fresh = false, step
 
   return {
     status: 'ok', ranAt: new Date().toISOString(), host: hostView(show, hostFeed, hostEntity),
-    seeds: seedEntities.map(s => s.name), habitRerank: HABIT_RERANK,
+    seeds: seedEntities.map(s => s.name),
     shortlist: ranked.shortlist.map(row),
     more: ranked.more.map(row),
-    outOfReach: ranked.outOfReach.map(row),
-    paused: ranked.paused.map(row),
-    removed: ranked.removed.map(row),
     bigNames: ranked.bigNames.map(b => ({ name: b.name, popularity: b.popularity })),
     llmOnly: llmOnly.map(name => ({ name, inShortlist: ranked.shortlist.some(r => sameShow(r.showName, name) || sameShow(r.name, name)) })),
     usage: diff(u0, usage()),

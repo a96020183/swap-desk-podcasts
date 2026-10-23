@@ -19,36 +19,36 @@ test('keeps Qloo order and marks the first five', () => {
   assert.equal(r.shortlist[5].call.column, 'shortlist');
 });
 
-test('removes same publisher, pauses stale feeds, moves far bigger shows out of reach', () => {
+test('labels only: same publisher, quiet feed and much bigger reach keep their Qloo position', () => {
   const r = rankCandidates(host, [
     cand(1, { artist: 'Me' }),
     cand(2, { feed: feed({ daysSinceLast: 200 }) }),
     cand(3, { popularity: 0.7 }),
     cand(4),
   ], { today: TODAY });
-  assert.deepEqual(r.removed.map(c => c.rank), [1]);
-  assert.deepEqual(r.paused.map(c => c.rank), [2]);
-  assert.deepEqual(r.outOfReach.map(c => c.rank), [3]);
-  assert.deepEqual(r.shortlist.map(c => c.rank), [4]);
+  assert.deepEqual(r.shortlist.map(c => c.rank), [1, 2, 3, 4]);
+  assert.ok(chips(host, r.shortlist[0]).some(c => c.text === 'Same publisher'));
+  assert.ok(chips(host, r.shortlist[1]).some(c => c.text === 'Quiet for 6+ months'));
+  assert.ok(chips(host, r.shortlist[2]).some(c => c.text === 'Much bigger reach'));
+  assert.deepEqual(r.shortlist[3].call.reasons, []);
 });
 
-test('same network is read from both descriptions', () => {
+test('same network is read from both descriptions and only labelled', () => {
   assert.ok(networksIn('A proud member of the Bleav Podcast Network.').has('bleav'));
   const h = { ...host, description: 'Part of the Bleav Podcast Network' };
   const r = rankCandidates(h, [cand(1, { feed: feed({ description: 'We are part of the Bleav Network' }) }), cand(2)], { today: TODAY });
-  assert.equal(r.removed[0].rank, 1);
+  assert.equal(r.shortlist[0].rank, 1);
+  assert.ok(r.shortlist[0].sameNetwork);
 });
 
-test('swap habits move rows only when the rerank switch is on', () => {
-  const cs = () => [cand(1), cand(2), cand(3, { swaps: [{ show: 'Other Show', date: '2026-01-01', episode: 'Feed drop: Other Show' }] })];
-  assert.deepEqual(rankCandidates(host, cs(), { today: TODAY }).shortlist.map(c => c.rank), [1, 2, 3]);
-  assert.deepEqual(rankCandidates(host, cs(), { today: TODAY, habitRerank: true }).shortlist.map(c => c.rank), [1, 3, 2]);
-});
-
-test('already swapped with you in the last 12 months: labelled and moved down', () => {
-  const r = rankCandidates(host, [cand(1, { swaps: [{ show: 'My Show', date: '2026-05-02', episode: 'x' }] }), cand(2)], { today: TODAY });
-  assert.deepEqual(r.shortlist.map(c => c.rank), [2, 1]);
-  assert.ok(chips(host, r.shortlist[1]).some(c => c.k === 'you' && c.text.includes('May 2026')));
+test('swap habits and past swaps never change the order', () => {
+  const r = rankCandidates(host, [
+    cand(1, { swaps: [{ show: 'My Show', date: '2026-05-02', episode: 'x' }] }), cand(2),
+    cand(3, { swaps: [{ show: 'Other Show', date: '2026-01-01', episode: 'Feed drop: Other Show' }] }),
+  ], { today: TODAY });
+  assert.deepEqual(r.shortlist.map(c => c.rank), [1, 2, 3]);
+  assert.ok(chips(host, r.shortlist[0]).some(c => c.k === 'you' && c.text.includes('May 2026')));
+  assert.ok(chips(host, r.shortlist[2]).some(c => c.text === 'Swapped with 1 show'));
 });
 
 test('Why uses only Qloo tags and feed facts, and says nothing without material', () => {

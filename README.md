@@ -12,13 +12,14 @@ Swap Desk finds podcasts whose audiences overlap with yours, reads their feeds t
 3. Swap Desk reads each candidate's own public RSS feed: last episode, how often it publishes, episode count, first year,
    public contact, and its recent promo episodes. gpt-4.1-mini names the show each promo episode was for; a name is kept
    only if it appears word for word in that episode's text.
-4. Rows are ordered by Qloo's rank. Shows from your own publisher or network are left out, shows with no episode in
-   120 days go to **Paused**, and shows far more popular than yours go to **Great fit, likely out of reach**.
-   The top 20 are the shortlist; the top 5 are **Your first five**.
+4. The shortlist is **Qloo's top 20, in Qloo's order**, the same list the evidence page scores. The top 5 are
+   **Your first five**. Nothing is moved or dropped: shows far more popular than yours get **Much bigger reach**,
+   feeds with no episode in 120 days get **Quiet for N+ months**, and shows from your own publisher or network,
+   or that you already swapped with, are labelled too.
 5. Every row has a **Why** line built by code from fixed sentences. The material comes only from Qloo
    (shared tags from `/v2/analysis/compare`, or tags on both entities) or from facts in the feeds. The LLM never writes it.
-6. **Receipt** opens three panels: *Qloo says* (entity, rank, affinity, popularity, query), *Their feed says*
-   (episodes, swaps with the episode each came from), *Our call* (where the row landed and why).
+6. **Receipt** opens three panels: *Qloo says* (entity, rank, affinity, popularity, shared tags, query), *Their feed says*
+   (episodes, swaps with the episode each came from), *Our call* (the labels we added and why).
 7. **Draft invite** writes a short email from the row's facts. Every show and episode name in the draft is checked against
    the facts; if one fails, you get a fixed template instead. You edit it, tick "I've read this", and open it in your own
    email app. Swap Desk never sends email. Five drafts per session, ten per show per day.
@@ -36,7 +37,7 @@ taken from their own feeds, with the test committed before any feed was fetched.
 - gpt-5.5 with web search found 19.0% on the same 48 shows. That gap is too small to call, so we treat it as a tie.
 - Day-one checks on the agent layer (protocol committed before any candidate feed was fetched): reading feeds for swap
   habits did **not** move real partners up enough to pass (Test A), so swap habits are shown on each row and never change
-  the order. Seed shows for unknown podcasts did not beat the LLM alone (Test B), so the fallback screen shows no accuracy number.
+  the order. Swap Desk makes no claim that its AI layer improves the ranking. Seed shows for unknown podcasts did not beat the LLM alone (Test B), so the fallback screen shows no accuracy number.
 
 Protocols, scripts and derived results are in `research/validation/` (the original study; commit ids listed in
 `COMMITS.txt` refer to the study's own repository) and `research/day1/`. Raw Qloo responses, feed text and LLM outputs
@@ -75,7 +76,6 @@ The judge examples on the home page run live the first time and are then served 
 | `QLOO_CALL_CAP` | `1200` | the server stops calling Qloo after this many calls (counter in `.private/`) |
 | `OPENAI_USD_CAP` | `3` | the server stops calling OpenAI after this spend |
 | `WARM_PRESETS` | off | `1` prepares the judge examples in the background at start |
-| `HABIT_RERANK` | off | `1` lets swap habits move rows. Off because Day-1 Test A did not pass |
 | `PORT` | `3000` | |
 
 ### Deploy (Render free plan)

@@ -29,7 +29,7 @@ const readBody = req => new Promise((resolve) => {
 function publicResult(r) {
   if (!r || r.status !== 'ok') return r;
   const strip = rows => rows.map(({ _draft, ...rest }) => rest);
-  return { ...r, shortlist: strip(r.shortlist), more: strip(r.more), outOfReach: strip(r.outOfReach), paused: strip(r.paused), removed: strip(r.removed) };
+  return { ...r, shortlist: strip(r.shortlist), more: strip(r.more) };
 }
 
 const runKey = (itunesId, seeds) => `${itunesId}|${(seeds || []).map(s => s.qid).sort().join(',')}`;
@@ -89,7 +89,7 @@ async function api(req, res, url) {
     const b = await readBody(req);
     const r = runs.get(String(b.key || '')) || getCached('runs', String(b.key || ''));
     if (!r || r.status !== 'ok') return send(res, 404, { error: 'Run not found. Start again.' });
-    const all = [...r.shortlist, ...r.more, ...r.outOfReach];
+    const all = [...r.shortlist, ...r.more];
     const row = all.find(x => x.key === String(b.row || ''));
     if (!row) return send(res, 404, { error: 'Show not found in this run.' });
     const day = new Date().toISOString().slice(0, 10);

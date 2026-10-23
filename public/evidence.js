@@ -31,7 +31,7 @@ function day1(d) {
     const pass = a.PASS;
     blocks.push(`<div class="test"><h3>Test A: does reading feeds for swap habits move real partners up?<span class="verdict ${pass ? 'pass' : 'fail'}">${pass ? 'Passed' : 'Did not pass'}</span></h3>
       <p>Qloo's top 50 for each of the 48 shows, re-ordered when a candidate's recent episodes show swaps with other shows. Top 20: Qloo alone ${p1(a['Q@20'])}, with swap habits read by the LLM ${p1(a['QH_agent@20'])}, with a keyword rule ${p1(a['QH_rule@20'])}. Difference ${a['QH_agent - Q [CI]'][0]} points (${ci(a['QH_agent - Q [CI]'].slice(1))}); random re-ordering of the same number of shows reaches ${p1(a['placebo p95'])} at its 95th percentile.</p>
-      <p>${pass ? 'Swap habits now move rows on the desk.' : 'So swap habits are shown on each row as information and never change the order. We claim no lift.'}</p></div>`);
+      <p>${pass ? 'Swap habits could move rows, but the desk keeps Qloo's order so the shortlist matches the list scored above.' : 'So swap habits are shown on each row as information and never change the order. We claim no lift.'}</p></div>`);
   } else blocks.push('<div class="test"><h3>Test A<span class="verdict wait">Running</span></h3></div>');
   if (B) {
     blocks.push(`<div class="test"><h3>Test B: when Qloo doesn't know a show, do seed shows help?<span class="verdict ${B.PASS ? 'pass' : 'fail'}">${B.PASS ? 'Passed' : 'Did not pass'}</span></h3>
@@ -95,6 +95,7 @@ async function main() {
       </ul></div>
       <div><h3>What it doesn't</h3><ul>
         <li><b>Beat a top LLM with web search.</b> On the same 48 shows, gpt-5.5 with web search found 19.0% in its top 20 and Qloo 24.3%. That gap is too small to call. Mixing the two lists did not help.</li>
+        <li><b>Get better from our feed reading.</b> Re-ordering Qloo's list by who trades promos did not find more real partners (Test A below), and seed shows did not help for shows Qloo doesn't know (Test B). So the shortlist stays in Qloo's order and our feed reading only adds labels and facts.</li>
         <li><b>Coverage.</b> Qloo knows ${f.coverage}% of the indie shows in our test that trade promos. When it doesn't know yours, we say so and ask for seed shows.</li>
         <li><b>Other tools.</b> Apple shows "Listeners Also Subscribe To" lists and Rephonic sells audience and cross-promo data. We did not compare against either.</li>
         <li><b>What feeds miss.</b> A feed only shows swaps that hosts wrote into episode titles or notes. A promo read out loud and never written down is invisible to us.</li>

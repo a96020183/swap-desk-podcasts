@@ -52,6 +52,10 @@ export function chips(host, c) {
   if (c.affinity != null) out.push({ k: 'taste', text: `Taste match ${c.affinity.toFixed(2)}` });
   if (c.reach === 'similar') out.push({ k: 'reach', text: 'Similar reach' });
   else if (c.reach === 'bigger') out.push({ k: 'reach', text: 'Bigger reach' });
+  else if (c.reach === 'much') out.push({ k: 'much', text: 'Much bigger reach' });
+  if (c.quietMonths) out.push({ k: 'quiet', text: `Quiet for ${c.quietMonths}+ months` });
+  if (c.samePublisher) out.push({ k: 'same', text: 'Same publisher' });
+  if (c.sameNetwork) out.push({ k: 'same', text: 'Same network' });
   const f = c.feed;
   if (f?.ok) {
     const bits = [`${f.episodeCount} episode${f.episodeCount === 1 ? '' : 's'}`];

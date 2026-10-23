@@ -166,12 +166,11 @@ function receiptHtml(row) {
     </dl></section>
     <section><h4>Their feed says</h4>${feed}</section>
     <section><h4>Our call</h4><dl>
-      <dt>Placed</dt><dd>${c.position ? '#' + c.position + (c.column === 'firstFive' ? ', first five' : '') : esc(columnName(c.column))}</dd>
-    </dl>${c.reasons.length ? `<ul>${c.reasons.map(r => `<li>${esc(r)}</li>`).join('')}</ul>` : '<p style="margin:8px 0 0">Kept in Qloo\'s order.</p>'}
+      <dt>Position</dt><dd>${c.position ? '#' + c.position + (c.column === 'firstFive' ? ', first five' : '') : 'Below the top 20'}, in Qloo's order</dd>
+    </dl>${c.reasons.length ? `<p style="margin:8px 0 0">Labels we added:</p><ul>${c.reasons.map(r => `<li>${esc(r)}</li>`).join('')}</ul>` : '<p style="margin:8px 0 0">No labels added.</p>'}
     <p class="ours">This part is Swap Desk's reading, not Qloo's.</p></section>
   </div>`;
 }
-const columnName = c => ({ outOfReach: 'Great fit, likely out of reach', paused: 'Paused', removed: 'Left out', below: 'Below the top 20' }[c] || c);
 
 function firstFiveRow(row) {
   return `<div class="row" data-key="${esc(row.key)}">
@@ -179,7 +178,7 @@ function firstFiveRow(row) {
     ${row.artwork ? `<img class="art" src="${esc(row.artwork)}" alt="" loading="lazy">` : '<div class="art"></div>'}
     <div>
       <div class="name">${esc(row.name)}</div><div class="by">${esc(row.artist)}</div>
-      <div class="chips">${chipHtml(row.chips, ['taste', 'reach', 'feed', 'swaps', 'you', 'open'])}</div>
+      <div class="chips">${chipHtml(row.chips, ['taste', 'reach', 'much', 'quiet', 'same', 'feed', 'swaps', 'you', 'open'])}</div>
       ${row.why.length ? `<ul class="why">${row.why.map(w => `<li data-src="${w.src === 'qloo' ? 'Qloo' : 'Feed'}">${esc(w.text)}</li>`).join('')}</ul>` : ''}
     </div>
     <div class="acts">
@@ -191,7 +190,8 @@ function firstFiveRow(row) {
 }
 
 function restRow(row) {
-  const two = row.chips.filter(c => ['reach', 'swaps', 'you', 'open'].includes(c.k)).slice(0, 2);
+  const order = ['quiet', 'much', 'same', 'you', 'swaps', 'reach'];
+  const two = row.chips.filter(c => order.includes(c.k)).sort((a, b) => order.indexOf(a.k) - order.indexOf(b.k)).slice(0, 2);
   const taste = row.chips.find(c => c.k === 'taste');
   return `<div class="line" data-key="${esc(row.key)}">
     <div class="num">${pad(row.position)}</div>
@@ -206,17 +206,20 @@ function renderResult() {
   const five = r.shortlist.slice(0, 5), rest = r.shortlist.slice(5);
   const desk = `
     ${r.seeds?.length ? `<p class="based">Based on your picks: ${esc(r.seeds.join(', '))}. Qloo has not seen your show.</p>` : ''}
-    <div class="five"><div class="five-head"><h3>Your first five</h3><span>${r.shortlist.length} of 50 Qloo matches made the shortlist</span></div>
-      ${five.map(firstFiveRow).join('') || '<p>No active shows to suggest.</p>'}</div>
+    <div class="five"><div class="five-head"><h3>Your first five</h3><span>${r.seeds?.length ? 'Your picks first, then Qloo's matches in Qloo's order' : 'Top 20 of Qloo's matches, in Qloo's order'}</span></div>
+      ${five.map(firstFiveRow).join('') || '<p>No matches to show.</p>'}</div>
     ${rest.length ? `<div class="rest"><h3>Next on the list</h3>${rest.map(restRow).join('')}</div>` : ''}
     <div class="sides">
       <div class="side"><h3>Big name, different crowd</h3><p class="hint">Top of your genre, but not in Qloo's 50 closest to you.</p>
         <ul>${r.bigNames.map(b => `<li>${esc(b.name)}</li>`).join('') || '<li>None</li>'}</ul></div>
-      <div class="side"><h3>Great fit, likely out of reach</h3><p class="hint">Close match, but Qloo popularity is well above yours.</p>
-        <ul>${r.outOfReach.map(b => `<li>${esc(b.name)}<span>#${esc(b.receipt.qloo.rank)}</span></li>`).join('') || '<li>None</li>'}</ul></div>
+      <div class="side"><h3>Reading the labels</h3><p class="hint">Labels never change the order. They help you decide.</p>
+        <ul>
+          <li>Similar reach<span>in Qloo's list capped near your popularity</span></li>
+          <li>Much bigger reach<span>Qloo popularity well above yours</span></li>
+          <li>Quiet for 4+ months<span>no new episode in their feed</span></li>
+          <li>Swapped with N shows<span>promo episodes in their feed</span></li>
+        </ul></div>
     </div>
-    ${r.paused.length ? `<details class="fold"><summary>Paused: ${r.paused.length} shows with no new episode in 120 days</summary><ul>${r.paused.map(p => `<li>${esc(p.name)} <span>#${esc(p.receipt.qloo.rank)}</span></li>`).join('')}</ul></details>` : ''}
-    ${r.removed.length ? `<details class="fold"><summary>Left out: ${r.removed.length} from your own publisher or network</summary><ul>${r.removed.map(p => `<li>${esc(p.name)} <span>${esc(p.receipt.call.reasons[0] || '')}</span></li>`).join('')}</ul></details>` : ''}
     <p class="usage">${r.usage.qloo + r.usage.feeds ? `This run: ${r.usage.qloo} Qloo calls, ${r.usage.feeds} feeds read, ${r.usage.llmCalls} LLM calls, ${r.seconds} s.` : 'This run reused data fetched in the last 24 hours.'} Run at ${esc(new Date(r.ranAt).toUTCString().slice(5, 22))} UTC${state.mode === 'recorded' ? ' (recorded mode; switch to Live to refetch)' : ''}.</p>`;
   const llm = `<p class="llm-note">What gpt-4.1-mini suggests with no web search and no Qloo, from the same show name, publisher, genre and description. Titles as the model wrote them; we did not check that they exist.</p>
     <ol class="llm-list">${r.llmOnly.map(x => `<li>${esc(x.name)}</li>`).join('')}</ol>`;
@@ -233,7 +236,7 @@ function renderResult() {
 
 function findRow(key) {
   const r = state.result;
-  return [...r.shortlist, ...r.more, ...r.outOfReach, ...r.paused, ...r.removed].find(x => x.key === key);
+  return [...r.shortlist, ...r.more].find(x => x.key === key);
 }
 
 function toggleReceipt(btn) {

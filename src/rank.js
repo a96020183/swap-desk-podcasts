@@ -1,4 +1,4 @@
-// Ordering and labels (spec 3.2). Pure functions: same input, same output. Qloo's rank is the base order.
+// Labels for each row (spec 3.2, revised: labels only, Qloo's order kept). Pure functions.
 import { RULES } from './config.js';
 import { normalize, sameShow, daysBetween } from './util.js';
 
@@ -48,34 +48,31 @@ export function swapsWithOthers(host, c) {
   return seen;
 }
 
-export function rankCandidates(host, cands, { habitRerank = false, today = new Date().toISOString().slice(0, 10), bigNames = [] } = {}) {
-  const removed = [], paused = [], outOfReach = [], active = [];
-  for (const c of cands) {
-    const call = { reasons: [] };
-    c.call = call;
+// The shortlist is Qloo's top 20 in Qloo's order: the same list the evidence page scores (24.3% at k = 20).
+// Nothing is moved or dropped. Size, quiet feeds, same publisher or network, and past swaps become labels only.
+export function rankCandidates(host, cands, { today = new Date().toISOString().slice(0, 10), bigNames = [] } = {}) {
+  const ordered = [...cands].sort((a, b) => a.rank - b.rank);
+  for (const c of ordered) {
+    const flags = [];
     c.others = swapsWithOthers(host, c);
     c.swappedWithYou = swappedWith(host, c, today);
-    c.reach = host.popularity == null || c.popularity == null ? null : (c.inSimilar ? 'similar' : 'bigger');
-    if (samePublisher(host, c)) { call.column = 'removed'; call.reasons.push('Same publisher or feed owner as your show'); removed.push(c); continue; }
-    const net = sharedNetwork(host, c);
-    if (net) { call.column = 'removed'; call.sameNetwork = true; call.reasons.push('Same network (both feeds name it in their description)'); removed.push(c); continue; }
-    if (c.feed?.ok && c.feed.daysSinceLast != null && c.feed.daysSinceLast > RULES.pausedDays) {
-      call.column = 'paused'; call.reasons.push(`No new episode for ${c.feed.daysSinceLast} days`); paused.push(c); continue;
-    }
-    if (host.popularity != null && c.popularity != null && c.popularity - host.popularity >= RULES.outOfReachGap) {
-      call.column = 'outOfReach'; call.reasons.push('Qloo popularity is well above yours'); outOfReach.push(c); continue;
-    }
-    let eff = c.rank;
-    if (habitRerank && c.others.length) { eff *= RULES.habitBoost; call.reasons.push('Moved up: trades promos with other shows'); }
-    if (c.swappedWithYou) { eff += 1000; call.reasons.push('Moved down: you already swapped in the last 12 months'); }
-    c.eff = eff;
-    active.push(c);
+    c.reach = host.popularity == null || c.popularity == null ? null
+      : c.popularity - host.popularity >= RULES.outOfReachGap ? 'much' : (c.inSimilar ? 'similar' : 'bigger');
+    c.samePublisher = samePublisher(host, c);
+    c.sameNetwork = !c.samePublisher && Boolean(sharedNetwork(host, c));
+    c.quietMonths = c.feed?.ok && c.feed.daysSinceLast != null && c.feed.daysSinceLast > RULES.pausedDays ? Math.floor(c.feed.daysSinceLast / 30) : 0;
+    if (c.samePublisher) flags.push('Same publisher or feed owner as your show');
+    if (c.sameNetwork) flags.push('Same network: both feeds name it in their description');
+    if (c.quietMonths) flags.push(`No new episode for ${c.feed.daysSinceLast} days`);
+    if (c.reach === 'much') flags.push('Qloo popularity is well above yours');
+    if (c.swappedWithYou) flags.push('You already swapped in the last 12 months');
+    c.call = { reasons: flags };
   }
-  active.sort((a, b) => a.eff - b.eff || a.rank - b.rank);
-  const shortlist = active.slice(0, RULES.shortlist);
+  const shortlist = ordered.slice(0, RULES.shortlist);
   shortlist.forEach((c, i) => { c.position = i + 1; c.call.column = i < RULES.firstFive ? 'firstFive' : 'shortlist'; });
-  active.slice(RULES.shortlist).forEach(c => { c.call.column = 'below'; });
+  const more = ordered.slice(RULES.shortlist);
+  more.forEach(c => { c.call.column = 'below'; });
   const inQloo = cands.map(c => c.name);
   const big = bigNames.filter(b => !sameShow(b.name, host.name) && !inQloo.some(n => sameShow(n, b.name))).slice(0, 5);
-  return { shortlist, outOfReach: outOfReach.slice(0, 5), bigNames: big, paused, removed, more: active.slice(RULES.shortlist) };
+  return { shortlist, more, bigNames: big };
 }

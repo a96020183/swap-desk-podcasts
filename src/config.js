@@ -39,15 +39,11 @@ export const RULES = {
   candidates: 50,          // Qloo podcast -> podcast candidates per show
   shortlist: 20,           // rows on the first screen
   firstFive: 5,
-  pausedDays: 120,         // no new episode for this long -> "Paused"
-  recentSwapDays: 365,     // swapped with you inside this window -> labelled and moved down
+  pausedDays: 120,         // no new episode for this long -> "Quiet for N months" label
+  recentSwapDays: 365,     // swapped with you inside this window -> labelled
   similarReachGap: 0.02,   // second Qloo call: filter.popularity.max = yours + 0.02
-  outOfReachGap: 0.05,     // popularity this much above yours -> "Great fit, likely out of reach"
+  outOfReachGap: 0.05,     // popularity this much above yours -> "Much bigger reach" label
   recentEpisodes: 40,      // only the 40 most recent episodes of a feed are read for swaps
-  habitBoost: 0.5,         // rank multiplier when a show trades promos with others (only if Day-1 Test A passed)
   draftsPerSession: 5,
   draftsPerShowPerDay: 10,
 };
-
-// Day-1 Test A decides whether swap habits move rows (see research/day1). Off unless the test passed.
-export const HABIT_RERANK = env.HABIT_RERANK === '1';
