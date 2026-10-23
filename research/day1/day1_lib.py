@@ -62,17 +62,36 @@ def boot_diff(per_a, per_b, ids, B=10000, seed=7):
 
 
 # ---------- usage ----------
-USAGE = os.path.join(PRIV, '_usage.json')
+# One counter file per running script (no cross-process races); a lock guards threads; usage() sums all files.
+import threading
+_LOCK = threading.Lock()
+_ME = os.path.splitext(os.path.basename(sys.argv[0] or 'interactive'))[0] or 'interactive'
+USAGE = os.path.join(PRIV, '_usage_%s.json' % _ME)
+_U = json.load(open(USAGE)) if os.path.exists(USAGE) else {'usd': 0.0, 'llm_calls': 0, 'qloo': 0, 'itunes': 0, 'rss': 0}
+
+
+def _write():
+    tmp = USAGE + '.tmp'
+    json.dump(_U, open(tmp, 'w'), indent=1)
+    os.replace(tmp, USAGE)
 
 
 def usage():
-    return json.load(open(USAGE)) if os.path.exists(USAGE) else {'usd': 0.0, 'llm_calls': 0, 'qloo': 0, 'itunes': 0, 'rss': 0}
+    tot = {}
+    import glob as _g
+    for f in _g.glob(os.path.join(PRIV, '_usage*.json')):
+        try:
+            d = _U if os.path.abspath(f) == os.path.abspath(USAGE) else json.load(open(f))
+        except Exception:
+            continue
+        for k, v in d.items(): tot[k] = round(tot.get(k, 0) + v, 6)
+    return tot
 
 
 def bump(field, n=1):
-    u = usage(); u[field] = u.get(field, 0) + n
-    json.dump(u, open(USAGE, 'w'), indent=1)
-    return u
+    with _LOCK:
+        _U[field] = _U.get(field, 0) + n
+        _write()
 
 
 # ---------- OpenAI ----------
@@ -83,7 +102,7 @@ def llm(prompt, max_tokens=2000, cache_key=None):
     f = os.path.join(PRIV, 'llm', hashlib.sha1((cache_key or prompt).encode()).hexdigest() + '.json')
     if os.path.exists(f):
         return json.load(open(f, encoding='utf8'))
-    if usage()['usd'] > LLM_CAP_USD:
+    if usage().get('usd', 0) > LLM_CAP_USD:
         raise SystemExit('LLM cap reached')
     body = {'model': 'gpt-4.1-mini', 'temperature': 0, 'max_tokens': max_tokens, 'response_format': {'type': 'json_object'},
             'messages': [{'role': 'system', 'content': 'Reply with JSON only.'}, {'role': 'user', 'content': prompt}]}
@@ -98,8 +117,7 @@ def llm(prompt, max_tokens=2000, cache_key=None):
     if r is None:
         return {}
     tin, tout = r['usage']['prompt_tokens'], r['usage']['completion_tokens']
-    u = usage(); u['usd'] += tin * 0.4 / 1e6 + tout * 1.6 / 1e6; u['llm_calls'] += 1
-    json.dump(u, open(USAGE, 'w'), indent=1)
+    bump('usd', tin * 0.4 / 1e6 + tout * 1.6 / 1e6); bump('llm_calls')
     try:
         out = json.loads(r['choices'][0]['message']['content'])
     except Exception:
