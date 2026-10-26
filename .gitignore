@@ -13,3 +13,6 @@ __pycache__/
 評審_*.md
 直播準備.md
 Devpost交件文字.md
+
+# Devpost thumbnail shows Qloo affinity values; keep it out of the public repo
+docs/thumbnail.png

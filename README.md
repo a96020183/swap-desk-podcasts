@@ -2,7 +2,9 @@
 
 Swap Desk finds podcasts whose audiences overlap with yours, reads their feeds to see who trades promos, and drafts the invite. You press send.
 
-Indie hosts grow by trading promos with shows like theirs, and the hard part is picking whom to ask. Today they ask around on Discord, scroll similar-show lists, or pay for research tools. Swap Desk is meant to be free for hosts. The business case is hosting platforms: a host whose show grows stays on the platform, so a platform could add Swap Desk to its growth tab for a monthly fee per show. Qloo would license the taste data to that platform. None of this is tested with a platform yet. Qloo ranks the shows, and every reason on screen comes from Qloo or from the other show's own feed.
+**Live demo:** https://swap-desk-podcasts.onrender.com (no login).
+
+Indie hosts grow by trading promos with shows like theirs, and the hard part is picking whom to ask: about 466,000 shows posted an episode in the last 90 days ([Podcast Index statistics](https://stats.podcastindex.org/daily_counts.json), 466,249 on Oct 23, 2026). Today they ask around on Discord, scroll similar-show lists, or pay for research tools. Swap Desk is meant to be free for hosts. The business case is hosting platforms: a host whose show grows stays on the platform, so a platform could add Swap Desk to its growth tab for a monthly fee per show. Qloo would license the taste data to that platform. None of this is tested with a platform yet. Qloo ranks the shows, and every reason on screen comes from Qloo or from the other show's own feed.
 
 ## What it does
 
@@ -41,6 +43,7 @@ taken from their own feeds, with the test committed before any feed was fetched.
 
 - The 48 shows were found because they write about swaps, so they are easier cases than a typical host.
 - In its top 20 (the cutoff fixed in advance), Qloo found 24.3% of the real partners (11.6% when counting only swaps since 2025); gpt-4.1-mini without web search found 6.1%; the most popular shows in the genre 3.7%.
+- Half of the 48 shows (50.0%) had at least one real partner in Qloo's top 20; with gpt-4.1-mini, 16.7% did (hit rate at 20 in `research/validation/results_summary.json`).
 - gpt-5.5 with web search found 19.0% on the same 48 shows. That gap is too small to call, so we treat it as a tie.
 - Day-one checks on the agent layer (protocol committed before any candidate feed was fetched): reading feeds for swap
   habits did **not** move real partners up enough to pass (Test A), so swap habits are shown on each row and never change
