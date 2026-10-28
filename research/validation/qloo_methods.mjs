@@ -1,7 +1,10 @@
 // Step 3: resolve anchors in Qloo (by iTunes id), then methods Q, QS, R1, R2. Writes data/anchors.json, data/qloo_lists.json
 import fs from 'node:fs';
 import { q, used } from './q.mjs';
-const DATA = 'C:/Users/678/AppData/Local/Temp/claude/c--2026---/135e2cdd-7648-492d-981b-527d5792a8c5/scratchpad/qloo2/wave6/data/';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+// Raw validation data lives outside git; set WAVE6_DIR to point elsewhere.
+const DATA = path.join(process.env.WAVE6_DIR || fileURLToPath(new URL('../../.private/research/wave6/', import.meta.url)), 'data') + path.sep;
 const truth = JSON.parse(fs.readFileSync(DATA + 'truth.json', 'utf8'));
 const norm = s => (s || '').normalize('NFKD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/&/g, ' and ').replace(/[^a-z0-9]+/g, ' ')
   .split(' ').filter(t => t && !['the', 'a', 'an', 'podcast', 'pod', 'show', 'official'].includes(t)).join(' ');

@@ -9,7 +9,7 @@ REPO = os.path.abspath(os.path.join(HERE, '..', '..'))
 sys.path.insert(0, os.path.join(REPO, 'research', 'validation'))
 from common import normalize, base, same, strip_html  # noqa: E402  (verbatim copy of the frozen helpers)
 
-WAVE6 = os.environ.get('WAVE6_DIR', 'C:/Users/678/AppData/Local/Temp/claude/c--2026---/135e2cdd-7648-492d-981b-527d5792a8c5/scratchpad/qloo2/wave6/')
+WAVE6 = os.environ.get('WAVE6_DIR', os.path.join(REPO, '.private', 'research', 'wave6'))
 WDATA = os.path.join(WAVE6, 'data')
 PRIV = os.path.join(REPO, '.private', 'research', 'day1')
 for d in ['feeds', 'extract', 'qloo', 'llm']:

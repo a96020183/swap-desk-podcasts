@@ -1,8 +1,9 @@
 # shared helpers. Keys are read from files and never printed or written.
 import json, os, re, time, unicodedata, urllib.request, urllib.parse, html
 
-W = 'C:/Users/678/AppData/Local/Temp/claude/c--2026---/135e2cdd-7648-492d-981b-527d5792a8c5/scratchpad/qloo2/wave6/'
-DATA = W + 'data/'
+# Raw validation data lives outside git; set WAVE6_DIR to point elsewhere.
+W = os.environ.get('WAVE6_DIR', os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..', '.private', 'research', 'wave6'))
+DATA = os.path.join(W, 'data') + os.sep
 os.makedirs(DATA, exist_ok=True)
 
 STOP = {'the', 'a', 'an', 'podcast', 'pod', 'show', 'official'}
